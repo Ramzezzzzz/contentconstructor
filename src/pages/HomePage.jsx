@@ -11,6 +11,7 @@ import {
   Database,
   HardDrive,
   Usb,
+  Film,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/ImageWithFallback";
 
