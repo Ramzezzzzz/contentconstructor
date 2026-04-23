@@ -3,55 +3,69 @@ import { motion } from 'framer-motion';
 import { Star, Calendar, Sparkles, Package, Film } from 'lucide-react';
 import AnimatedPage from '../components/AnimatedPage';
 
-const API_KEY = 'da5b6b9748f6df83ac6c08f2ce83f46a';
-const BASE_URL = 'https://api.themoviedb.org/3';
+// !!! ЗАМЕНИТЕ НА СВОЙ КЛЮЧ !!!
+const API_KEY = '7fd95d4b-d51b-4959-9e36-408eb4dcba93'; 
+const BASE_URL = 'https://kinopoiskapiunofficial.tech/api/v2.2';
 
-// Категории (эндпоинты TMDB)
 const categories = [
   {
-    name: 'ТОП 100 IMDB',
-    count: '100 фильмов',
+    name: 'ТОП 250',
+    count: 'Лучшие фильмы',
     icon: Star,
     color: 'from-amber-600/20 to-amber-600/5',
     borderColor: 'border-amber-600/30',
-    endpoint: '/movie/top_rated', // рейтинг IMDB
-    params: '&vote_count.gte=1000&page=1',
+    endpoint: '/films/top',
+    params: 'type=TOP_250_BEST_FILMS&page=1',
   },
   {
-    name: 'ТОП 100 Кинопоиск',
-    count: '100 фильмов',
+    name: 'Популярное',
+    count: 'Сейчас в топе',
     icon: Star,
     color: 'from-orange-600/20 to-orange-600/5',
     borderColor: 'border-orange-600/30',
-    endpoint: '/discover/movie',
-    params: '&sort_by=vote_average.desc&vote_count.gte=500&with_original_language=ru|en&page=1',
-  },
-  {
-    name: 'Фильмы по годам',
-    count: '1950-2026',
-    icon: Calendar,
-    color: 'from-blue-600/20 to-blue-600/5',
-    borderColor: 'border-blue-600/30',
-    endpoint: '/discover/movie',
-    params: '&sort_by=primary_release_date.desc&year=2024&page=1',
+    endpoint: '/films/top',
+    params: 'type=TOP_100_POPULAR_FILMS&page=1',
   },
   {
     name: 'Новинки 2026',
-    count: '50+ фильмов',
+    count: 'Свежие премьеры',
     icon: Sparkles,
     color: 'from-purple-600/20 to-purple-600/5',
     borderColor: 'border-purple-600/30',
-    endpoint: '/movie/now_playing',
-    params: '&page=1',
+    endpoint: '/films/premieres',
+    params: 'year=2026&month=JANUARY',
   },
 ];
 
 async function fetchMovies(endpoint, params) {
-  const url = `${BASE_URL}${endpoint}?api_key=${API_KEY}&language=ru${params}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  return data.results?.slice(0, 12) || []; // берём первые 12 фильмов для превью
+  const url = `${BASE_URL}${endpoint}?${params}`;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'X-API-KEY': API_KEY,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) {
+      console.error(`Ошибка API: ${res.status} ${res.statusText}`);
+      return [];
+    }
+    const data = await res.json();
+    return data.films?.slice(0, 12) || []; 
+  } catch (error) {
+    console.error('Сетевая ошибка:', error);
+    return [];
+  }
 }
+
+// Компонент для отображения изображения с заглушкой
+const ImageWithFallback = ({ src, alt, className }) => {
+  const handleError = (e) => {
+    e.target.onerror = null; // Предотвращаем бесконечный цикл ошибок
+    e.target.src = 'https://via.placeholder.com/300x450?text=Нет+постера';
+  };
+  return <img src={src} alt={alt} className={className} onError={handleError} loading="lazy" />;
+};
 
 export default function LibrariesPage() {
   const [libraryData, setLibraryData] = useState([]);
@@ -118,25 +132,20 @@ export default function LibrariesPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {library.movies.map((movie) => (
                   <motion.div
-                    key={movie.id}
+                    key={movie.kinopoiskId}
                     whileHover={{ scale: 1.05 }}
                     className="relative overflow-hidden rounded-xl bg-zinc-800/50 border border-white/10 group"
                   >
-                    <img
-                      src={
-                        movie.poster_path
-                          ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-                          : 'https://via.placeholder.com/300x450?text=Нет+постера'
-                      }
-                      alt={movie.title}
+                    <ImageWithFallback
+                      src={movie.posterUrl}
+                      alt={movie.nameRu}
                       className="w-full h-60 object-cover group-hover:scale-110 transition-transform duration-300"
-                      loading="lazy"
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                      <h3 className="text-sm font-bold truncate">{movie.title}</h3>
+                      <h3 className="text-sm font-bold truncate">{movie.nameRu}</h3>
                       <div className="flex items-center gap-1 text-xs text-yellow-400">
                         <Star className="w-3 h-3 fill-current" />
-                        <span>{movie.vote_average?.toFixed(1)}</span>
+                        <span>{movie.rating}</span>
                       </div>
                     </div>
                   </motion.div>
