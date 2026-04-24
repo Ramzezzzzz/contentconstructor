@@ -159,12 +159,3 @@ export default function LibrariesPage() {
                 </div>
                 <button className="px-4 py-2 bg-red-600 hover:bg-red-700 transition-colors rounded-lg text-white font-medium">
                   Заказать подборку
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </AnimatedPage>
-  );
-}
