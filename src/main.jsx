@@ -1,17 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import './index.css';
-import App from './App';
-import { CartProvider } from './context/CartContext';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import "./index.css";
+import App from "./App";
+import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext"; // новый импорт
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {/* 👇 Ключевое изменение: basename="/movie" */}
     <BrowserRouter basename="/movie">
-      <CartProvider>
-        <App />
-      </CartProvider>
+      <AuthProvider>
+        {" "}
+        {/* ← оборачиваем всё в AuthProvider */}
+        <CartProvider>
+          <App />
+        </CartProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
