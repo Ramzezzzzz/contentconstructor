@@ -14,10 +14,9 @@ import {
 import AnimatedPage from "../components/AnimatedPage";
 import { useAuth } from "../context/AuthContext";
 
-const API_KEY = "7fd95d4b-d51b-4959-9e36-408eb4dcba93";
+const API_KEY = "7fd95d4b-d51b-4959-9e36-408eb4dcba93"; // замените
 const API_BASE = "/movie/api";
 
-// Дебаунс для поиска
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -27,7 +26,6 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-// Заглушка для постера
 const ImageWithFallback = ({ src, alt, className }) => {
   const handleError = (e) => {
     e.target.onerror = null;
@@ -55,7 +53,7 @@ export default function ConstructorPage() {
   const searchInputRef = useRef(null);
   const debouncedQuery = useDebounce(query, 400);
 
-  // Загрузка коллекции с сервера при монтировании
+  // Загрузка коллекции с сервера
   useEffect(() => {
     if (!user || !token) {
       setInitialLoad(false);
@@ -76,7 +74,7 @@ export default function ConstructorPage() {
     })();
   }, [user, token]);
 
-  // Поиск фильмов (Кинопоиск v2.1)
+  // Поиск фильмов (v2.1)
   const handleSearch = useCallback(async (searchQuery) => {
     if (!searchQuery || searchQuery.trim().length < 2) {
       setSearchResults([]);
@@ -101,7 +99,6 @@ export default function ConstructorPage() {
     }
   }, []);
 
-  // Автопоиск при изменении debouncedQuery
   useEffect(() => {
     handleSearch(debouncedQuery);
   }, [debouncedQuery, handleSearch]);
@@ -109,8 +106,7 @@ export default function ConstructorPage() {
   // Добавление фильма в серверную коллекцию
   const addToCollection = async (movie) => {
     if (!user || !token) return;
-    // Проверка на дубликат локально (опционально)
-    if (collection.some((item) => item.kinopoisk_id === movie.kinopoiskId)) {
+    if (collection.some((item) => item.kinopoisk_id === movie.filmId)) {
       console.warn("Фильм уже в коллекции");
       return;
     }
@@ -122,7 +118,7 @@ export default function ConstructorPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          kinopoisk_id: movie.kinopoiskId,
+          kinopoisk_id: movie.filmId, // ← ИСПОЛЬЗУЕМ filmId
           title: movie.nameRu || movie.nameEn || "Без названия",
           poster_url: movie.posterUrl || "",
           rating: movie.rating || 0,
@@ -130,11 +126,10 @@ export default function ConstructorPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Ошибка добавления");
-      // Добавляем в локальный стейт
       setCollection((prev) => [
         ...prev,
         {
-          kinopoisk_id: movie.kinopoiskId,
+          kinopoisk_id: movie.filmId,
           title: movie.nameRu || movie.nameEn,
           poster_url: movie.posterUrl,
           rating: movie.rating,
@@ -146,7 +141,7 @@ export default function ConstructorPage() {
     }
   };
 
-  // Удаление фильма из серверной коллекции
+  // Удаление
   const removeFromCollection = async (kinopoiskId) => {
     if (!user || !token) return;
     try {
@@ -171,20 +166,16 @@ export default function ConstructorPage() {
     }
   };
 
-  // Очистка поиска
   const clearSearch = () => {
     setQuery("");
     setSearchResults([]);
     searchInputRef.current?.focus();
   };
 
-  // Расчёт статистики
   const totalMovies = collection.length;
   const totalSizeGB = (totalMovies * 2.5).toFixed(1);
-  const totalDurationMin = totalMovies * 120;
-  const totalDurationHours = (totalDurationMin / 60).toFixed(1);
+  const totalDurationHours = (totalMovies * 2).toFixed(1);
 
-  // Обработчик клавиш
   const handleKeyDown = (e) => {
     if (e.key === "Escape") clearSearch();
   };
@@ -264,7 +255,7 @@ export default function ConstructorPage() {
                     <AnimatePresence>
                       {searchResults.map((movie) => (
                         <motion.div
-                          key={movie.kinopoiskId}
+                          key={movie.filmId}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
@@ -287,7 +278,7 @@ export default function ConstructorPage() {
                               <button
                                 onClick={() => addToCollection(movie)}
                                 disabled={collection.some(
-                                  (m) => m.kinopoisk_id === movie.kinopoiskId
+                                  (m) => m.kinopoisk_id === movie.filmId
                                 )}
                                 className="p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
                                 aria-label="Добавить в коллекцию"
@@ -315,7 +306,7 @@ export default function ConstructorPage() {
               ) : null}
             </div>
 
-            {/* Моя коллекция */}
+            {/* Коллекция */}
             <div>
               <div className="bg-zinc-800/30 border border-white/10 rounded-2xl p-6 sticky top-24">
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -373,7 +364,6 @@ export default function ConstructorPage() {
                       </AnimatePresence>
                     </ul>
 
-                    {/* Статистика */}
                     <div className="mt-6 pt-4 border-t border-white/10 space-y-2 text-sm text-gray-400">
                       <div className="flex justify-between">
                         <span className="flex items-center gap-1">
@@ -395,7 +385,6 @@ export default function ConstructorPage() {
                       </div>
                     </div>
 
-                    {/* Кнопка перехода к носителю */}
                     <button
                       onClick={() => (window.location.href = "/movie/catalog")}
                       className="mt-6 w-full py-3 bg-red-600 hover:bg-red-700 transition-colors rounded-xl font-medium"

@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Film, User, ShoppingCart, Menu, X, Lock, Mail } from "lucide-react";
+import {
+  Film,
+  User,
+  ShoppingCart,
+  Menu,
+  X,
+  Lock,
+  Mail,
+  LogOut,
+} from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,7 +25,11 @@ export default function Navbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authMode, setAuthMode] = useState("login");
-  const [authForm, setAuthForm] = useState({ email: "", password: "", name: "" });
+  const [authForm, setAuthForm] = useState({
+    email: "",
+    password: "",
+    name: "",
+  });
   const [authError, setAuthError] = useState("");
   const location = useLocation();
   const { totalItems } = useCart();
@@ -34,7 +47,7 @@ export default function Navbar() {
       }
       setIsAuthOpen(false);
       setAuthForm({ email: "", password: "", name: "" });
-      navigate('/profile'); // ← переход в личный кабинет
+      navigate("/profile"); // ← переход в личный кабинет
     } catch (err) {
       setAuthError(err.message);
     }
@@ -75,19 +88,27 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Имя пользователя стало ссылкой на профиль */}
-              <Link to="/profile" className="hidden sm:inline text-gray-300 hover:text-red-500 transition-colors">
-                {user.name || user.email}
+              {/* Ссылка на профиль (иконка User + имя на десктопах) */}
+              <Link
+                to="/profile"
+                className="flex items-center gap-1 text-gray-300 hover:text-red-500 transition-colors"
+              >
+                <User className="w-5 h-5" />
+                <span className="hidden sm:inline">
+                  {user.name || user.email}
+                </span>
               </Link>
+              {/* Кнопка выхода (иконка на мобильных, текст на десктопах) */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1 text-sm text-gray-400 hover:text-red-500 transition-colors"
               >
-                <User className="w-4 h-4" />
+                <LogOut className="w-4 h-4 sm:hidden" />
                 <span className="hidden sm:inline">Выйти</span>
               </button>
             </div>
           ) : (
+            // Кнопка «Войти» для неавторизованных
             <button
               onClick={() => setIsAuthOpen(true)}
               className="flex items-center gap-2 hover:text-red-500 transition-colors"
@@ -113,7 +134,11 @@ export default function Navbar() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden hover:text-red-500 transition-colors"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
@@ -176,7 +201,10 @@ export default function Navbar() {
                 {/* Вкладки */}
                 <div className="flex mb-8 bg-zinc-800/50 rounded-xl p-1">
                   <button
-                    onClick={() => { setAuthMode("login"); setAuthError(""); }}
+                    onClick={() => {
+                      setAuthMode("login");
+                      setAuthError("");
+                    }}
                     className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                       authMode === "login"
                         ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
@@ -186,7 +214,10 @@ export default function Navbar() {
                     Вход
                   </button>
                   <button
-                    onClick={() => { setAuthMode("register"); setAuthError(""); }}
+                    onClick={() => {
+                      setAuthMode("register");
+                      setAuthError("");
+                    }}
                     className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                       authMode === "register"
                         ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
@@ -225,7 +256,9 @@ export default function Navbar() {
                         <input
                           type="text"
                           value={authForm.name}
-                          onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
+                          onChange={(e) =>
+                            setAuthForm({ ...authForm, name: e.target.value })
+                          }
                           className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
                           placeholder="Иван Петров"
                           required
@@ -242,7 +275,9 @@ export default function Navbar() {
                       <input
                         type="email"
                         value={authForm.email}
-                        onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
+                        onChange={(e) =>
+                          setAuthForm({ ...authForm, email: e.target.value })
+                        }
                         className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
                         placeholder="you@example.com"
                         required
@@ -258,7 +293,9 @@ export default function Navbar() {
                       <input
                         type="password"
                         value={authForm.password}
-                        onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
+                        onChange={(e) =>
+                          setAuthForm({ ...authForm, password: e.target.value })
+                        }
                         className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
                         placeholder="••••••••"
                         required
@@ -280,7 +317,9 @@ export default function Navbar() {
                     <div className="w-full border-t border-white/10"></div>
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-zinc-900 px-3 text-gray-500">или продолжить через</span>
+                    <span className="bg-zinc-900 px-3 text-gray-500">
+                      или продолжить через
+                    </span>
                   </div>
                 </div>
 
