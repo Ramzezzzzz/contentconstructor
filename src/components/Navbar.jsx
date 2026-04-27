@@ -157,7 +157,7 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-20 pb-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-4 sm:p-4 pt-20 sm:pt-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setIsAuthOpen(false)}
           >
             <motion.div
@@ -166,7 +166,7 @@ export default function Navbar() {
               exit={{ scale: 0.95, opacity: 0, y: 30 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md max-h-[80vh] bg-zinc-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-lg relative"
+              className="w-full max-w-md max-h-[calc(100vh-6rem)] sm:max-h-[85vh] bg-zinc-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-lg relative"
             >
               {/* Крестик закрытия */}
               <button
