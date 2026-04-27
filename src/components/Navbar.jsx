@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Film, User, ShoppingCart, Menu, X } from "lucide-react";
+import { Film, User, ShoppingCart, Menu, X, Lock, Mail } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -166,10 +166,19 @@ export default function Navbar() {
               exit={{ scale: 0.95, opacity: 0, y: 30 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md bg-zinc-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-lg"
+              className="w-full max-w-md bg-zinc-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-lg relative"
             >
-              <div className="p-8">
-                {/* Вкладки Вход / Регистрация */}
+              {/* Крестик закрытия */}
+              <button
+                onClick={() => setIsAuthOpen(false)}
+                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                aria-label="Закрыть"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="p-5 sm:p-8 max-h-[85vh] overflow-y-auto">
+                {/* Вкладки */}
                 <div className="flex mb-8 bg-zinc-800/50 rounded-xl p-1">
                   <button
                     onClick={() => {
@@ -200,137 +209,119 @@ export default function Navbar() {
                 </div>
 
                 {authError && (
-                  <div className="mb-4 p-3 bg-red-600/20 border border-red-500/30 rounded-xl text-sm text-red-300">
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 p-3 bg-red-600/20 border border-red-500/30 rounded-xl text-sm text-red-300 flex items-center gap-2"
+                  >
+                    <span className="text-lg">⚠️</span>
                     {authError}
-                  </div>
+                  </motion.div>
                 )}
 
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    console.log("🚀 Отправка формы");
                     handleAuthSubmit(e);
                   }}
-                  className="space-y-4"
+                  className="space-y-5"
                 >
                   {authMode === "register" && (
                     <div>
                       <label className="block text-sm font-medium mb-1.5 text-gray-300">
                         Имя
                       </label>
-                      <input
-                        type="text"
-                        value={authForm.name}
-                        onChange={(e) =>
-                          setAuthForm({ ...authForm, name: e.target.value })
-                        }
-                        className="w-full px-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
-                        placeholder="Иван Петров"
-                        required
-                      />
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                        <input
+                          type="text"
+                          value={authForm.name}
+                          onChange={(e) =>
+                            setAuthForm({ ...authForm, name: e.target.value })
+                          }
+                          className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
+                          placeholder="Иван Петров"
+                          required
+                        />
+                      </div>
                     </div>
                   )}
                   <div>
                     <label className="block text-sm font-medium mb-1.5 text-gray-300">
                       Email
                     </label>
-                    <input
-                      type="email"
-                      value={authForm.email}
-                      onChange={(e) =>
-                        setAuthForm({ ...authForm, email: e.target.value })
-                      }
-                      className="w-full px-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
-                      placeholder="you@example.com"
-                      required
-                    />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                      <input
+                        type="email"
+                        value={authForm.email}
+                        onChange={(e) =>
+                          setAuthForm({ ...authForm, email: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1.5 text-gray-300">
                       Пароль
                     </label>
-                    <input
-                      type="password"
-                      value={authForm.password}
-                      onChange={(e) =>
-                        setAuthForm({ ...authForm, password: e.target.value })
-                      }
-                      className="w-full px-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
-                      placeholder="••••••••"
-                      required
-                    />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                      <input
+                        type="password"
+                        value={authForm.password}
+                        onChange={(e) =>
+                          setAuthForm({ ...authForm, password: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
+                        placeholder="••••••••"
+                        required
+                      />
+                    </div>
                   </div>
+
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-red-600 hover:bg-red-700 active:bg-red-800 transition-colors rounded-xl font-semibold text-white shadow-lg shadow-red-600/20"
+                    className="w-full py-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 rounded-xl font-semibold text-white shadow-lg shadow-red-600/20 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     {authMode === "login" ? "Войти" : "Зарегистрироваться"}
                   </button>
                 </form>
 
+                {/* Разделитель */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-white/10"></div>
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-zinc-900 px-3 text-gray-500">или</span>
+                    <span className="bg-zinc-900 px-3 text-gray-500">
+                      или продолжить через
+                    </span>
                   </div>
                 </div>
 
+                {/* Социальные кнопки БЕЗ SVG */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     disabled
-                    className="flex items-center justify-center gap-2 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed hover:bg-white/10 transition-colors"
+                    className="flex items-center justify-center gap-3 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-gray-300 cursor-not-allowed transition-all hover:bg-white/10 disabled:opacity-60"
                     title="Скоро появится"
                   >
-                    <span className="w-5 h-5 flex items-center justify-center rounded bg-red-500 text-white text-xs font-bold">
-                      G
-                    </span>
+                    <span className="text-lg font-bold text-red-400">G+</span>
                     Google
                   </button>
                   <button
                     disabled
-                    className="flex items-center justify-center gap-2 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed hover:bg-white/10 transition-colors"
+                    className="flex items-center justify-center gap-3 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-gray-300 cursor-not-allowed transition-all hover:bg-white/10 disabled:opacity-60"
                     title="Скоро появится"
                   >
-                    <span className="w-5 h-5 flex items-center justify-center rounded bg-blue-400 text-white text-xs font-bold">
-                      T
-                    </span>
+                    <span className="text-lg font-bold text-blue-400">✈️</span>
                     Telegram
                   </button>
                 </div>
-
-                <p className="text-center text-sm text-gray-400 mt-6">
-                  {authMode === "login" ? (
-                    <>
-                      Нет аккаунта?{" "}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAuthMode("register");
-                          setAuthError("");
-                        }}
-                        className="text-red-500 hover:underline font-medium"
-                      >
-                        Зарегистрироваться
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      Уже есть аккаунт?{" "}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAuthMode("login");
-                          setAuthError("");
-                        }}
-                        className="text-red-500 hover:underline font-medium"
-                      >
-                        Войти
-                      </button>
-                    </>
-                  )}
-                </p>
               </div>
             </motion.div>
           </motion.div>
