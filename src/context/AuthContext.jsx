@@ -6,34 +6,48 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  const API_BASE = import.meta.env.BASE_URL + "api"; // = '/movie/api/'
+  const API_BASE = "/movie/api"; // жёстко, без import.meta.env
 
-  // При загрузке проверяем токен
+  // При старте, если есть токен, проверяем его
   useEffect(() => {
     if (!token) return;
+    console.log("🟡 Проверяем токен при старте:", token);
     fetch(API_BASE + "/auth.php", {
       headers: { Authorization: "Bearer " + token },
     })
       .then((res) => res.json())
       .then((data) => {
+        console.log("🟢 Ответ auth.php:", data);
         if (data.id) {
           setUser(data);
         } else {
-          logout();
+          // Токен невалиден – сбрасываем
+          console.warn("🔴 Токен не принят, сбрасываем");
+          localStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
         }
       })
-      .catch(() => logout());
-  }, [token]);
+      .catch((err) => {
+        console.error("🔴 Ошибка сети при проверке токена:", err);
+        // Не сбрасываем токен при сетевой ошибке, может сервер недоступен
+      });
+  }, []); // пустой массив зависимостей — запускается один раз
 
   async function login(email, password) {
+    console.log("🔵 Вызван login с email:", email);
     const res = await fetch(API_BASE + "/login.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
+    console.log("🔵 Ответ login.php:", data);
     if (!res.ok) throw new Error(data.error || "Ошибка входа");
+
+    // Сохраняем токен
     localStorage.setItem("token", data.token);
+    console.log("🟢 Токен сохранён в localStorage:", data.token);
     setToken(data.token);
     setUser(data.user);
     return data.user;
