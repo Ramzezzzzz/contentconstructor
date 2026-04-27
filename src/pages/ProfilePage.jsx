@@ -19,31 +19,52 @@ export default function ProfilePage() {
   const [collection, setCollection] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authCheck, setAuthCheck] = useState(true); // ждём подтверждения авторизации
 
   const API_BASE = "/movie/api";
+
+  // Ожидание, пока AuthProvider проверит токен и установит user
+  useEffect(() => {
+    if (user) {
+      setAuthCheck(false);
+    } else if (!token) {
+      setAuthCheck(false); // токена нет – значит точно не авторизован
+    }
+    // Если token есть, а user нет – оставляем authCheck true (ждём)
+  }, [user, token]);
 
   useEffect(() => {
     if (!user || !token) return;
     const loadData = async () => {
       try {
-        // Загружаем коллекцию
         const colRes = await fetch(`${API_BASE}/collection.php`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const colData = await colRes.json();
         setCollection(Array.isArray(colData) ? colData : []);
-
-        // Загружаем заказы (пока заглушка, если API нет)
-        // Можно оставить пустой массив
         setOrders([]);
       } catch (err) {
-        console.error("Ошибка загрузки данных профиля:", err);
+        console.error("Ошибка загрузки профиля:", err);
       } finally {
         setLoading(false);
       }
     };
     loadData();
   }, [user, token]);
+
+  // Если идёт проверка токена (user ещё не получен)
+  if (authCheck) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <Film className="w-16 h-16 text-red-500" />
+        </motion.div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
