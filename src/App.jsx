@@ -9,6 +9,7 @@ import ConstructorPage from "./pages/ConstructorPage";
 import DeliveryPage from "./pages/DeliveryPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   const location = useLocation();
@@ -25,6 +26,7 @@ function App() {
           <Route path="/delivery" element={<DeliveryPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </AnimatePresence>
       <Footer />
