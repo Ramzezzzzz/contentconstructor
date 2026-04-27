@@ -1,69 +1,82 @@
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
-  Play, Truck, Package, MapPin, Star, Calendar, Sparkles,
-  Database, HardDrive, Usb, Film, Search, Sliders, CheckCircle,
+  Play,
+  Truck,
+  Package,
+  MapPin,
+  Star,
+  Calendar,
+  Sparkles,
+  Database,
+  HardDrive,
+  Usb,
+  Film,
+  Search,
+  Sliders,
+  CheckCircle,
   User,
-} from 'lucide-react';
-import { ImageWithFallback } from '../components/ImageWithFallback'; // путь проверьте
-import { useAuth } from '../context/AuthContext';
+} from "lucide-react";
+import { ImageWithFallback } from "../components/ImageWithFallback"; // путь проверьте
+import { useAuth } from "../context/AuthContext";
 
 const storageDevices = [
   {
-    name: 'USB Flash Drive',
+    name: "USB Flash Drive",
     icon: Usb,
-    capacity: '32GB - 256GB',
-    price: 'от 2 500 ₽',
-    description: 'Компактное решение для небольших коллекций',
-    image: 'https://images.unsplash.com/photo-1551818014-7c8ace9c1b5c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=...'
+    capacity: "32GB - 256GB",
+    price: "от 2 500 ₽",
+    description: "Компактное решение для небольших коллекций",
+    image:
+      "https://images.unsplash.com/photo-1551818014-7c8ace9c1b5c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=...",
   },
   {
-    name: 'SSD накопитель',
+    name: "SSD накопитель",
     icon: Database,
-    capacity: '500GB - 2TB',
-    price: 'от 8 900 ₽',
-    description: 'Быстрая передача данных, средние коллекции',
-    image: 'https://images.unsplash.com/photo-1756836857570-127b0408b676?...'
+    capacity: "500GB - 2TB",
+    price: "от 8 900 ₽",
+    description: "Быстрая передача данных, средние коллекции",
+    image: "https://images.unsplash.com/photo-1756836857570-127b0408b676?...",
   },
   {
-    name: 'Жесткий диск',
+    name: "Жесткий диск",
     icon: HardDrive,
-    capacity: '1TB - 8TB',
-    price: 'от 12 500 ₽',
-    description: 'Максимальный объем для полных библиотек',
-    image: 'https://images.unsplash.com/photo-1689287428295-52e64882c4f1?...'
-  }
+    capacity: "1TB - 8TB",
+    price: "от 12 500 ₽",
+    description: "Максимальный объем для полных библиотек",
+    image: "https://images.unsplash.com/photo-1689287428295-52e64882c4f1?...",
+  },
 ];
 
 const libraries = [
   {
-    name: 'ТОП 100 IMDB',
-    count: '100 фильмов',
+    name: "ТОП 100 IMDB",
+    count: "100 фильмов",
     icon: Star,
-    color: 'from-amber-600/20 to-amber-600/5',
-    borderColor: 'border-amber-600/30'
+    color: "from-amber-600/20 to-amber-600/5",
+    borderColor: "border-amber-600/30",
   },
   {
-    name: 'ТОП 100 Кинопоиск',
-    count: '100 фильмов',
+    name: "ТОП 100 Кинопоиск",
+    count: "100 фильмов",
     icon: Star,
-    color: 'from-orange-600/20 to-orange-600/5',
-    borderColor: 'border-orange-600/30'
+    color: "from-orange-600/20 to-orange-600/5",
+    borderColor: "border-orange-600/30",
   },
   {
-    name: 'Фильмы по годам',
-    count: '1950-2026',
+    name: "Фильмы по годам",
+    count: "1950-2026",
     icon: Calendar,
-    color: 'from-blue-600/20 to-blue-600/5',
-    borderColor: 'border-blue-600/30'
+    color: "from-blue-600/20 to-blue-600/5",
+    borderColor: "border-blue-600/30",
   },
   {
-    name: 'Новинки 2026',
-    count: '50+ фильмов',
+    name: "Новинки 2026",
+    count: "50+ фильмов",
     icon: Sparkles,
-    color: 'from-purple-600/20 to-purple-600/5',
-    borderColor: 'border-purple-600/30'
-  }
+    color: "from-purple-600/20 to-purple-600/5",
+    borderColor: "border-purple-600/30",
+  },
 ];
 
 export default function HomePage() {
@@ -87,19 +100,25 @@ export default function HomePage() {
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: 0.8,
+                delay: 0.3,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
               {/* Декоративная полоска */}
               <div className="w-12 h-1 bg-red-500 mb-6" />
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-                {user ? `С возвращением, ${user.name || 'друг'}!` : 'Ваш кинотеатр\nна физическом носителе'}
+                {user
+                  ? `С возвращением, ${user.name || "друг"}!`
+                  : "Ваш кинотеатр\nна физическом носителе"}
               </h1>
 
               <p className="text-xl md:text-2xl text-gray-300/80 leading-relaxed mb-8 max-w-xl">
                 {user
-                  ? 'Продолжите собирать коллекцию или выберите готовую подборку.'
-                  : 'Купите или арендуйте коллекцию любимых фильмов на флешке, SSD или жестком диске'}
+                  ? "Продолжите собирать коллекцию или выберите готовую подборку."
+                  : "Купите или арендуйте коллекцию любимых фильмов на флешке, SSD или жестком диске"}
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -160,15 +179,31 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Как это работает</h2>
-            <p className="text-xl text-gray-400">Три простых шага к вашему кинотеатру</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Как это работает
+            </h2>
+            <p className="text-xl text-gray-400">
+              Три простых шага к вашему кинотеатру
+            </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Search, title: 'Выбираете фильмы', desc: 'Из готовых подборок или создайте свою коллекцию в конструкторе.' },
-              { icon: Sliders, title: 'Настраиваете носитель', desc: 'USB, SSD или HDD — под любой объём и бюджет.' },
-              { icon: CheckCircle, title: 'Получаете заказ', desc: 'Доставка по СНГ или самовывоз. Наслаждайтесь просмотром!' }
+              {
+                icon: Search,
+                title: "Выбираете фильмы",
+                desc: "Из готовых подборок или создайте свою коллекцию в конструкторе.",
+              },
+              {
+                icon: Sliders,
+                title: "Настраиваете носитель",
+                desc: "USB, SSD или HDD — под любой объём и бюджет.",
+              },
+              {
+                icon: CheckCircle,
+                title: "Получаете заказ",
+                desc: "Доставка по СНГ или самовывоз. Наслаждайтесь просмотром!",
+              },
             ].map((step, index) => (
               <motion.div
                 key={step.title}
@@ -197,9 +232,12 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">Выберите носитель</h2>
+            <h2 className="text-5xl md:text-6xl font-bold mb-6">
+              Выберите носитель
+            </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              От компактной флешки до объемного жесткого диска — подберем оптимальное решение под вашу коллекцию
+              От компактной флешки до объемного жесткого диска — подберем
+              оптимальное решение под вашу коллекцию
             </p>
           </motion.div>
 
@@ -227,7 +265,9 @@ export default function HomePage() {
                   <p className="text-gray-400 mb-4">{device.description}</p>
                   <div className="flex items-baseline justify-between mb-6">
                     <span className="text-gray-500">{device.capacity}</span>
-                    <span className="text-2xl font-bold text-red-500">{device.price}</span>
+                    <span className="text-2xl font-bold text-red-500">
+                      {device.price}
+                    </span>
                   </div>
                   <Link to="/catalog">
                     <motion.button
@@ -255,9 +295,12 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">Готовые библиотеки</h2>
+            <h2 className="text-5xl md:text-6xl font-bold mb-6">
+              Готовые библиотеки
+            </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Кураторские подборки лучших фильмов всех времен — от классики до новинок
+              Кураторские подборки лучших фильмов всех времен — от классики до
+              новинок
             </p>
           </motion.div>
 
@@ -305,8 +348,12 @@ export default function HomePage() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">Доставка по СНГ</h2>
-            <p className="text-xl text-gray-400 mb-8">Быстрая и надежная доставка в любую точку региона</p>
+            <h2 className="text-5xl md:text-6xl font-bold mb-6">
+              Доставка по СНГ
+            </h2>
+            <p className="text-xl text-gray-400 mb-8">
+              Быстрая и надежная доставка в любую точку региона
+            </p>
             <div className="flex justify-center gap-8 mb-8">
               <div className="flex items-center gap-2 text-gray-300">
                 <Truck className="w-6 h-6 text-red-500" /> Курьером
