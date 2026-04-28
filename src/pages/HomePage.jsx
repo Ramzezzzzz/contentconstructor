@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import {
   Film,
   Search,
-  Plus,
   Zap,
   Shield,
   Truck,
@@ -19,7 +18,26 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// Данные носителей с иконками вместо фото
+// -- Компонент для безопасной загрузки картинок --
+const ImageWithFallback = ({ src, alt, className }) => {
+  const handleError = (e) => {
+    e.target.onerror = null;
+    e.target.style.background = "linear-gradient(135deg, #1f2937, #111827)";
+    e.target.style.minHeight = "200px";
+    e.target.src = ""; // убираем битую картинку
+  };
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={handleError}
+      loading="lazy"
+    />
+  );
+};
+
+// -- Данные носителей --
 const devices = [
   {
     icon: Usb,
@@ -44,14 +62,29 @@ const devices = [
   },
 ];
 
-// Варианты использования
+// -- Варианты использования --
 const useCases = [
-  { icon: Plane, title: 'В самолёте', desc: 'Смотрите любимое кино без интернета.', image: '/images/airplane.jpg' },
-  { icon: Car,   title: 'В дороге',   desc: 'Для детей на заднем сиденье — идеально.', image: '/images/car.webp' },
-  { icon: Tent,  title: 'На природе', desc: 'Вечером у костра или в палатке.', image: '/images/camping.jpg' },
+  {
+    icon: Plane,
+    title: "В самолёте",
+    desc: "Смотрите любимое кино без интернета.",
+    image: "/images/airplane.jpg",
+  },
+  {
+    icon: Car,
+    title: "В дороге",
+    desc: "Для детей на заднем сиденье — идеально.",
+    image: "/images/car.webp",
+  },
+  {
+    icon: Tent,
+    title: "На природе",
+    desc: "Вечером у костра или в палатке.",
+    image: "/images/camping.jpg",
+  },
 ];
 
-// Отсылки к поп‑культуре
+// -- Поп‑культурные подборки --
 const popCollections = [
   {
     emoji: "🎬",
@@ -70,14 +103,84 @@ const popCollections = [
   },
 ];
 
+// -- Мини‑конструктор (демо) --
+function MiniConstructor() {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const demofilms = [
+    { id: 1, title: "Интерстеллар", year: 2014, rating: 8.6 },
+    { id: 2, title: "Начало", year: 2010, rating: 8.7 },
+    { id: 3, title: "Побег из Шоушенка", year: 1994, rating: 9.1 },
+    { id: 4, title: "Тёмный рыцарь", year: 2008, rating: 9.0 },
+  ];
+
+  const handleSearch = (e) => {
+    setQuery(e.target.value);
+    if (e.target.value.trim().length === 0) {
+      setResults([]);
+    } else {
+      const filtered = demofilms.filter((f) =>
+        f.title.toLowerCase().includes(e.target.value.toLowerCase())
+      );
+      setResults(filtered);
+    }
+  };
+
+  return (
+    <div className="relative max-w-xl mx-auto">
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          value={query}
+          onChange={handleSearch}
+          placeholder="Начните вводить название..."
+          className="w-full py-4 pl-12 pr-4 bg-zinc-800/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-red-500 outline-none transition-colors"
+        />
+      </div>
+      {results.length > 0 && (
+        <ul className="mt-2 bg-zinc-800 border border-white/10 rounded-xl overflow-hidden">
+          {results.map((film) => (
+            <li
+              key={film.id}
+              className="p-3 hover:bg-white/5 cursor-pointer flex items-center gap-3"
+            >
+              <Star className="w-4 h-4 text-yellow-400" />
+              <span>
+                {film.title} ({film.year}) – рейтинг {film.rating}
+              </span>
+              <button className="ml-auto px-3 py-1 bg-red-600 rounded-lg text-sm">
+                Добавить
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-sm text-gray-500 mt-4">
+        Это демо‑версия. В полном конструкторе — тысячи фильмов.
+      </p>
+      <Link
+        to="/constructor"
+        className="inline-block mt-4 text-red-400 hover:text-red-300 font-semibold transition-colors"
+      >
+        Открыть конструктор
+      </Link>
+    </div>
+  );
+}
+
+// ================== ГЛАВНАЯ СТРАНИЦА ==================
 export default function HomePage() {
   return (
     <div className="bg-black text-white">
       {/* Экран 1: Приветствие */}
       <section
-  className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-zinc-900 via-black to-black"
-  style={{ backgroundImage: 'url(/images/hero_bg.webp)', backgroundSize: 'cover', backgroundPosition: 'center' }}
->
+        className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(/images/hero_bg.webp)",
+        }}
+      >
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,9 +228,14 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="text-center p-8 bg-zinc-800/30 border border-white/10 rounded-3xl"
+                className="text-center p-8 bg-zinc-800/30 border border-white/10 rounded-3xl overflow-hidden"
               >
-                <item.icon className="w-12 h-12 mx-auto mb-4 text-red-400" />
+                <ImageWithFallback
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-40 object-cover rounded-2xl mb-4"
+                />
+                <item.icon className="w-12 h-12 mx-auto mb-2 text-red-400" />
                 <h3 className="text-2xl font-bold mb-2">{item.title}</h3>
                 <p className="text-gray-400">{item.desc}</p>
               </motion.div>
@@ -217,72 +325,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </div>
-  );
-}
-
-// Мини‑конструктор с поиском (без API, с демо‑фильмами)
-function MiniConstructor() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const demofilms = [
-    { id: 1, title: "Интерстеллар", year: 2014, rating: 8.6 },
-    { id: 2, title: "Начало", year: 2010, rating: 8.7 },
-    { id: 3, title: "Побег из Шоушенка", year: 1994, rating: 9.1 },
-    { id: 4, title: "Тёмный рыцарь", year: 2008, rating: 9.0 },
-  ];
-
-  const handleSearch = (e) => {
-    setQuery(e.target.value);
-    if (e.target.value.trim().length === 0) {
-      setResults([]);
-    } else {
-      const filtered = demofilms.filter((f) =>
-        f.title.toLowerCase().includes(e.target.value.toLowerCase())
-      );
-      setResults(filtered);
-    }
-  };
-
-  return (
-    <div className="relative max-w-xl mx-auto">
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <input
-          type="text"
-          value={query}
-          onChange={handleSearch}
-          placeholder="Начните вводить название..."
-          className="w-full py-4 pl-12 pr-4 bg-zinc-800/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-red-500 outline-none transition-colors"
-        />
-      </div>
-      {results.length > 0 && (
-        <ul className="mt-2 bg-zinc-800 border border-white/10 rounded-xl overflow-hidden">
-          {results.map((film) => (
-            <li
-              key={film.id}
-              className="p-3 hover:bg-white/5 cursor-pointer flex items-center gap-3"
-            >
-              <Star className="w-4 h-4 text-yellow-400" />
-              <span>
-                {film.title} ({film.year}) – рейтинг {film.rating}
-              </span>
-              <button className="ml-auto px-3 py-1 bg-red-600 rounded-lg text-sm">
-                Добавить
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="text-sm text-gray-500 mt-4">
-        Это демо‑версия. В полном конструкторе — тысячи фильмов.
-      </p>
-      <Link
-        to="/constructor"
-        className="inline-block mt-4 text-red-400 hover:text-red-300 font-semibold transition-colors"
-      >
-        Открыть конструктор
-      </Link>
     </div>
   );
 }
