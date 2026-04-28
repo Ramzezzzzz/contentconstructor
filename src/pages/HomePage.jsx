@@ -1,317 +1,293 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  Play,
+  Film,
+  Search,
+  Plus,
+  Zap,
+  Shield,
   Truck,
-  Package,
-  MapPin,
+  Plane,
+  Car,
+  Tent,
   Star,
-  Calendar,
-  Sparkles,
-  Database,
+  Monitor,
   HardDrive,
   Usb,
-  Film,
+  Database,
+  ArrowRight,
 } from "lucide-react";
-import { ImageWithFallback } from "../components/ImageWithFallback";
 
-const storageDevices = [
+// Данные носителей с иконками вместо фото
+const devices = [
   {
-    name: "USB Flash Drive",
     icon: Usb,
-    capacity: "32GB - 256GB",
+    name: "USB‑флешка",
+    capacity: "32–256 ГБ",
     price: "от 2 500 ₽",
-    description: "Компактное решение для небольших коллекций",
-    image: "https://images.unsplash.com/photo-1551818014-7c8ace9c1b5c?...", // оставьте ваши ссылки
+    desc: "Для 1‑5 фильмов",
   },
   {
-    name: "SSD накопитель",
     icon: Database,
-    capacity: "500GB - 2TB",
+    name: "SSD‑накопитель",
+    capacity: "500 ГБ – 2 ТБ",
     price: "от 8 900 ₽",
-    description: "Быстрая передача данных, средние коллекции",
-    image: "https://images.unsplash.com/photo-1756836857570-127b0408b676?...",
+    desc: "Для 5‑50 фильмов",
   },
   {
-    name: "Жесткий диск",
     icon: HardDrive,
-    capacity: "1TB - 8TB",
+    name: "Жёсткий диск",
+    capacity: "1–8 ТБ",
     price: "от 12 500 ₽",
-    description: "Максимальный объем для полных библиотек",
-    image: "https://images.unsplash.com/photo-1689287428295-52e64882c4f1?...",
+    desc: "Для больших коллекций",
   },
 ];
 
-const libraries = [
+// Варианты использования
+const useCases = [
   {
-    name: "ТОП 100 IMDB",
-    count: "100 фильмов",
-    icon: Star,
-    color: "from-amber-600/20 to-amber-600/5",
-    borderColor: "border-amber-600/30",
+    icon: Plane,
+    title: "В самолёте",
+    desc: "Смотрите любимое кино без интернета.",
   },
   {
-    name: "ТОП 100 Кинопоиск",
-    count: "100 фильмов",
-    icon: Star,
-    color: "from-orange-600/20 to-orange-600/5",
-    borderColor: "border-orange-600/30",
+    icon: Car,
+    title: "В дороге",
+    desc: "Для детей на заднем сиденье — идеально.",
+  },
+  { icon: Tent, title: "На природе", desc: "Вечером у костра или в палатке." },
+];
+
+// Отсылки к поп‑культуре
+const popCollections = [
+  {
+    emoji: "🎬",
+    title: "Как у Тарантино",
+    desc: "Криминальное чтиво, Бешеные псы…",
   },
   {
-    name: "Фильмы по годам",
-    count: "1950-2026",
-    icon: Calendar,
-    color: "from-blue-600/20 to-blue-600/5",
-    borderColor: "border-blue-600/30",
+    emoji: "🧙",
+    title: "Волшебный мир",
+    desc: "Гарри Поттер, Властелин колец",
   },
   {
-    name: "Новинки 2026",
-    count: "50+ фильмов",
-    icon: Sparkles,
-    color: "from-purple-600/20 to-purple-600/5",
-    borderColor: "border-purple-600/30",
+    emoji: "👽",
+    title: "Советская фантастика",
+    desc: "Сталкер, Солярис, Кин‑дза‑дза!",
   },
 ];
 
 export default function HomePage() {
   return (
-    <>
-      {/* Hero Section */}
-      <section className="relative h-screen w-full overflow-hidden">
-        <div className="absolute inset-0">
-          <ImageWithFallback
-            src="https://images.unsplash.com/photo-1766425597359-08c8f7585ba4?..."
-            alt="Cinema atmosphere"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
-        </div>
-
-        <div className="relative h-full max-w-7xl mx-auto px-6 flex items-center">
-          <div className="max-w-2xl">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.8,
-                delay: 0.3,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-none">
-                Ваш кинотеатр
-                <br />
-                на физическом
-                <br />
-                носителе
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-xl">
-                Купите или арендуйте коллекцию любимых фильмов на флешке, SSD
-                или жестком диске
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to="/catalog">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-4 bg-red-600 hover:bg-red-700 transition-colors text-lg font-medium"
-                  >
-                    Выбрать носитель
-                  </motion.button>
-                </Link>
-                <Link to="/libraries">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-4 border border-white/30 hover:bg-white/10 transition-colors text-lg font-medium"
-                  >
-                    Готовые библиотеки
-                  </motion.button>
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        <motion.div
+    <div className="bg-black text-white">
+      {/* Экран 1: Приветствие */}
+      <section className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-zinc-900 via-black to-black">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-5xl md:text-6xl font-extrabold mb-6"
+        >
+          Твой офлайн‑кинотеатр
+        </motion.h1>
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          transition={{ delay: 0.3 }}
+          className="text-xl text-gray-300 max-w-xl mb-10"
         >
-          <Play className="w-6 h-6 text-white/50 animate-bounce" />
-        </motion.div>
+          Коллекции фильмов на USB, SSD и жёстких дисках. Смотри где угодно, без
+          интернета.
+        </motion.p>
+        <div className="flex gap-4">
+          <Link
+            to="/constructor"
+            className="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all active:scale-95"
+          >
+            Создать коллекцию
+          </Link>
+          <Link
+            to="/libraries"
+            className="px-8 py-4 border border-white/30 hover:bg-white/10 rounded-xl font-semibold transition-all active:scale-95"
+          >
+            Готовые подборки
+          </Link>
+        </div>
       </section>
 
-      {/* Storage Devices Section */}
-      <section className="py-32 bg-gradient-to-b from-black to-zinc-900">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              Выберите носитель
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              От компактной флешки до объемного жесткого диска — подберем
-              оптимальное решение под вашу коллекцию
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {storageDevices.map((device, index) => (
+      {/* Экран 2: Как использовать */}
+      <section className="py-24 bg-gradient-to-b from-black to-zinc-900">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+            Всегда с тобой
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {useCases.map((item, idx) => (
               <motion.div
-                key={device.name}
+                key={item.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="group relative overflow-hidden bg-gradient-to-b from-zinc-800/50 to-zinc-900/50 border border-white/10 hover:border-red-500/50 transition-all duration-300"
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="text-center p-8 bg-zinc-800/30 border border-white/10 rounded-3xl"
               >
-                <div className="aspect-video overflow-hidden">
-                  <ImageWithFallback
-                    src={device.image}
-                    alt={device.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-6">
-                  <device.icon className="w-10 h-10 text-red-500 mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">{device.name}</h3>
-                  <p className="text-gray-400 mb-4">{device.description}</p>
-                  <div className="flex items-baseline justify-between mb-6">
-                    <span className="text-gray-500">{device.capacity}</span>
-                    <span className="text-2xl font-bold text-red-500">
-                      {device.price}
-                    </span>
-                  </div>
-                  <Link to="/catalog">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-3 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 transition-all"
-                    >
-                      Добавить в корзину
-                    </motion.button>
-                  </Link>
-                </div>
+                <item.icon className="w-12 h-12 mx-auto mb-4 text-red-400" />
+                <h3 className="text-2xl font-bold mb-2">{item.title}</h3>
+                <p className="text-gray-400">{item.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Ready Libraries Section */}
-      <section className="py-32 bg-zinc-900">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              Готовые библиотеки
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Кураторские подборки лучших фильмов всех времен — от классики до
-              новинок
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {libraries.map((library, index) => (
+      {/* Экран 3: Культовые подборки */}
+      <section className="py-24 bg-zinc-900">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Культовые коллекции
+          </h2>
+          <p className="text-gray-400 mb-16 max-w-2xl mx-auto">
+            Собранные со вкусом под настроение — выбирай и заказывай.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {popCollections.map((col, idx) => (
               <motion.div
-                key={library.name}
+                key={col.title}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                className={`group relative overflow-hidden bg-gradient-to-br ${library.color} border ${library.borderColor} p-8 cursor-pointer`}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-gradient-to-br from-red-600/10 to-purple-600/10 border border-white/10 rounded-2xl p-8 cursor-pointer hover:border-red-500/50 transition-all"
               >
-                <library.icon className="w-16 h-16 mb-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                <h3 className="text-3xl font-bold mb-2">{library.name}</h3>
-                <p className="text-gray-400 mb-6">{library.count}</p>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Package className="w-4 h-4" />
-                  <span>Выберите носитель при оформлении</span>
-                </div>
+                <div className="text-5xl mb-4">{col.emoji}</div>
+                <h3 className="text-2xl font-bold mb-2">{col.title}</h3>
+                <p className="text-gray-400">{col.desc}</p>
               </motion.div>
             ))}
           </div>
-          <div className="text-center mt-12">
-            <Link to="/libraries">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-10 py-4 bg-red-600 hover:bg-red-700 transition-colors text-lg font-medium"
-              >
-                Все библиотеки
-              </motion.button>
-            </Link>
-          </div>
+          <Link
+            to="/libraries"
+            className="inline-block mt-12 px-8 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-semibold transition-all"
+          >
+            Все подборки
+          </Link>
         </div>
       </section>
 
-      {/* Delivery Section */}
-      <section className="py-32 bg-gradient-to-b from-zinc-900 to-black">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              Доставка по СНГ
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Быстрая и надежная доставка в любую точку региона
-            </p>
-          </motion.div>
+      {/* Экран 4: Встроенный мини‑конструктор */}
+      <section className="py-24 bg-black">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Собери свою коллекцию
+          </h2>
+          <p className="text-gray-400 mb-10">
+            Найди фильм и сразу добавь в корзину.
+          </p>
+          <MiniConstructor />
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {[
-              {
-                icon: Truck,
-                title: "Курьером",
-                desc: "1-3 дня в пределах города",
-              },
-              {
-                icon: Package,
-                title: "Почтой",
-                desc: "5-14 дней в любую точку СНГ",
-              },
-              {
-                icon: MapPin,
-                title: "Самовывоз",
-                desc: "Бесплатно из пункта выдачи",
-              },
-            ].map((method, index) => (
+      {/* Экран 5: Носители + CTA */}
+      <section className="py-24 bg-gradient-to-b from-black to-zinc-900">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-16">
+            Выберите носитель
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {devices.map((dev, idx) => (
               <motion.div
-                key={method.title}
-                initial={{ opacity: 0, y: 20 }}
+                key={dev.name}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="text-center p-8 bg-white/5 border border-white/10"
+                transition={{ delay: idx * 0.1 }}
+                className="bg-zinc-800/30 border border-white/10 rounded-3xl p-8 hover:border-red-500/50 transition-all"
               >
-                <method.icon className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                <h3 className="text-xl font-bold mb-2">{method.title}</h3>
-                <p className="text-gray-400">{method.desc}</p>
+                <dev.icon className="w-12 h-12 mx-auto mb-4 text-red-400" />
+                <h3 className="text-xl font-bold mb-2">{dev.name}</h3>
+                <p className="text-sm text-gray-400 mb-4">{dev.desc}</p>
+                <div className="text-2xl font-bold text-red-400 mb-1">
+                  {dev.price}
+                </div>
+                <div className="text-sm text-gray-500 mb-6">{dev.capacity}</div>
+                <Link
+                  to="/catalog"
+                  className="block w-full py-3 bg-red-600 hover:bg-red-700 rounded-xl font-semibold transition-colors"
+                >
+                  Выбрать
+                </Link>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-    </>
+    </div>
+  );
+}
+
+// Мини‑конструктор с поиском (без API, с демо‑фильмами)
+function MiniConstructor() {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const demofilms = [
+    { id: 1, title: "Интерстеллар", year: 2014, rating: 8.6 },
+    { id: 2, title: "Начало", year: 2010, rating: 8.7 },
+    { id: 3, title: "Побег из Шоушенка", year: 1994, rating: 9.1 },
+    { id: 4, title: "Тёмный рыцарь", year: 2008, rating: 9.0 },
+  ];
+
+  const handleSearch = (e) => {
+    setQuery(e.target.value);
+    if (e.target.value.trim().length === 0) {
+      setResults([]);
+    } else {
+      const filtered = demofilms.filter((f) =>
+        f.title.toLowerCase().includes(e.target.value.toLowerCase())
+      );
+      setResults(filtered);
+    }
+  };
+
+  return (
+    <div className="relative max-w-xl mx-auto">
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          value={query}
+          onChange={handleSearch}
+          placeholder="Начните вводить название..."
+          className="w-full py-4 pl-12 pr-4 bg-zinc-800/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-red-500 outline-none transition-colors"
+        />
+      </div>
+      {results.length > 0 && (
+        <ul className="mt-2 bg-zinc-800 border border-white/10 rounded-xl overflow-hidden">
+          {results.map((film) => (
+            <li
+              key={film.id}
+              className="p-3 hover:bg-white/5 cursor-pointer flex items-center gap-3"
+            >
+              <Star className="w-4 h-4 text-yellow-400" />
+              <span>
+                {film.title} ({film.year}) – рейтинг {film.rating}
+              </span>
+              <button className="ml-auto px-3 py-1 bg-red-600 rounded-lg text-sm">
+                Добавить
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-sm text-gray-500 mt-4">
+        Это демо‑версия. В полном конструкторе — тысячи фильмов.
+      </p>
+      <Link
+        to="/constructor"
+        className="inline-block mt-4 text-red-400 hover:text-red-300 font-semibold transition-colors"
+      >
+        Открыть конструктор
+      </Link>
+    </div>
   );
 }

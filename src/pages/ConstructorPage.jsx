@@ -10,13 +10,20 @@ import {
   Film,
   Star,
   Package,
+  Sliders,
+  Monitor,
+  Music,
+  Users,
+  BookOpen,
 } from "lucide-react";
 import AnimatedPage from "../components/AnimatedPage";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
-const API_KEY = "7fd95d4b-d51b-4959-9e36-408eb4dcba93"; // замените
+const API_KEY = "7fd95d4b-d51b-4959-9e36-408eb4dcba93"; // замените при необходимости
 const API_BASE = "/movie/api";
 
+// Дебаунс для поиска
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -26,21 +33,13 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-const ImageWithFallback = ({ src, alt, className }) => {
-  const handleError = (e) => {
-    e.target.onerror = null;
-    e.target.src = "https://via.placeholder.com/300x450?text=Нет+постера";
-  };
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      onError={handleError}
-      loading="lazy"
-    />
-  );
-};
+// Жанры / настроения (демо, можно расширить)
+const genres = [
+  { name: "Боевик", icon: Monitor },
+  { name: "Комедия", icon: Users },
+  { name: "Музыка", icon: Music },
+  { name: "Документальное", icon: BookOpen },
+];
 
 export default function ConstructorPage() {
   const { user, token } = useAuth();
@@ -49,6 +48,7 @@ export default function ConstructorPage() {
   const [loading, setLoading] = useState(false);
   const [collection, setCollection] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [selectedGenre, setSelectedGenre] = useState(null); // фильтр по жанру (демо)
 
   const searchInputRef = useRef(null);
   const debouncedQuery = useDebounce(query, 400);
@@ -103,11 +103,10 @@ export default function ConstructorPage() {
     handleSearch(debouncedQuery);
   }, [debouncedQuery, handleSearch]);
 
-  // Добавление фильма в серверную коллекцию
+  // Добавление в коллекцию
   const addToCollection = async (movie) => {
     if (!user || !token) return;
     if (collection.some((item) => item.kinopoisk_id === movie.filmId)) {
-      console.warn("Фильм уже в коллекции");
       return;
     }
     try {
@@ -118,7 +117,7 @@ export default function ConstructorPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          kinopoisk_id: movie.filmId, // ← ИСПОЛЬЗУЕМ filmId
+          kinopoisk_id: movie.filmId,
           title: movie.nameRu || movie.nameEn || "Без названия",
           poster_url: movie.posterUrl || "",
           rating: movie.rating || 0,
@@ -172,9 +171,14 @@ export default function ConstructorPage() {
     searchInputRef.current?.focus();
   };
 
+  // Статистика
   const totalMovies = collection.length;
-  const totalSizeGB = (totalMovies * 2.5).toFixed(1);
-  const totalDurationHours = (totalMovies * 2).toFixed(1);
+  const totalSizeGB = (totalMovies * 2.5).toFixed(1); // ~2.5 ГБ/фильм
+  const totalDurationHours = (totalMovies * 2).toFixed(1); // ~120 мин/фильм
+
+  // Выбор максимального носителя из каталога (простая логика)
+  const recommendedCapacity =
+    totalMovies <= 5 ? "32GB" : totalMovies <= 50 ? "512GB" : "1TB";
 
   const handleKeyDown = (e) => {
     if (e.key === "Escape") clearSearch();
@@ -211,11 +215,7 @@ export default function ConstructorPage() {
           </motion.div>
 
           {/* Поиск */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative max-w-2xl mx-auto mb-12"
-          >
+          <div className="relative max-w-2xl mx-auto mb-8">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -243,7 +243,29 @@ export default function ConstructorPage() {
                 Поиск...
               </div>
             )}
-          </motion.div>
+          </div>
+
+          {/* Жанровые фильтры (демо) */}
+          <div className="flex justify-center flex-wrap gap-3 mb-8">
+            {genres.map((genre) => (
+              <button
+                key={genre.name}
+                onClick={() =>
+                  setSelectedGenre(
+                    genre.name === selectedGenre ? null : genre.name
+                  )
+                }
+                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
+                  selectedGenre === genre.name
+                    ? "bg-red-600 border-red-600 text-white"
+                    : "bg-white/5 border-white/10 text-gray-300 hover:text-white"
+                }`}
+              >
+                <genre.icon className="w-4 h-4" />
+                {genre.name}
+              </button>
+            ))}
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Результаты поиска */}
@@ -261,10 +283,18 @@ export default function ConstructorPage() {
                           exit={{ opacity: 0, scale: 0.9 }}
                           className="relative overflow-hidden rounded-xl bg-zinc-800/50 border border-white/10 group"
                         >
-                          <ImageWithFallback
-                            src={movie.posterUrl}
+                          <img
+                            src={
+                              movie.posterUrl ||
+                              "https://via.placeholder.com/300x450?text=Нет+постера"
+                            }
                             alt={movie.nameRu}
                             className="w-full h-52 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.target.src =
+                                "https://via.placeholder.com/300x450?text=Нет+постера";
+                            }}
+                            loading="lazy"
                           />
                           <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
                             <h3 className="text-sm font-bold truncate">
@@ -302,11 +332,18 @@ export default function ConstructorPage() {
                 <div className="text-center py-16 text-gray-400">
                   <Search className="w-16 h-16 mx-auto mb-4 opacity-30" />
                   <p>Начните вводить название фильма</p>
+                  <p className="text-sm mt-2">или выберите жанр выше</p>
+                  <Link
+                    to="/libraries"
+                    className="inline-block mt-4 text-red-500 hover:text-red-400 transition-colors"
+                  >
+                    Перейти в готовые библиотеки
+                  </Link>
                 </div>
               ) : null}
             </div>
 
-            {/* Коллекция */}
+            {/* Коллекция и прогресс-бар */}
             <div>
               <div className="bg-zinc-800/30 border border-white/10 rounded-2xl p-6 sticky top-24">
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -326,6 +363,27 @@ export default function ConstructorPage() {
                   </div>
                 ) : (
                   <>
+                    {/* Прогресс-бар заполнения носителя */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>Заполнено: {totalSizeGB} ГБ</span>
+                        <span>Рекомендуем: {recommendedCapacity}</span>
+                      </div>
+                      <div className="w-full h-2 bg-zinc-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              (parseFloat(totalSizeGB) /
+                                (parseInt(recommendedCapacity) || 1)) *
+                                100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
                     <ul className="space-y-3 max-h-96 overflow-y-auto pr-2">
                       <AnimatePresence>
                         {collection.map((movie) => (
@@ -336,10 +394,17 @@ export default function ConstructorPage() {
                             exit={{ opacity: 0, x: -20 }}
                             className="flex items-center gap-3 bg-black/30 rounded-xl p-2 border border-white/5"
                           >
-                            <ImageWithFallback
-                              src={movie.poster_url}
+                            <img
+                              src={
+                                movie.poster_url ||
+                                "https://via.placeholder.com/40x60?text="
+                              }
                               alt={movie.title}
                               className="w-12 h-16 object-cover rounded-lg"
+                              onError={(e) => {
+                                e.target.src =
+                                  "https://via.placeholder.com/40x60?text=";
+                              }}
                             />
                             <div className="flex-1 min-w-0">
                               <h3 className="text-sm font-medium truncate">
@@ -364,6 +429,7 @@ export default function ConstructorPage() {
                       </AnimatePresence>
                     </ul>
 
+                    {/* Статистика */}
                     <div className="mt-6 pt-4 border-t border-white/10 space-y-2 text-sm text-gray-400">
                       <div className="flex justify-between">
                         <span className="flex items-center gap-1">

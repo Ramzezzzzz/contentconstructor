@@ -10,6 +10,7 @@ import DeliveryPage from "./pages/DeliveryPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ProfilePage from "./pages/ProfilePage";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
   const location = useLocation();
@@ -27,6 +28,7 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Routes>
       </AnimatePresence>
       <Footer />

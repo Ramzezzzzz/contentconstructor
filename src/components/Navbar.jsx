@@ -19,6 +19,7 @@ const navLinks = [
   { path: "/libraries", label: "Библиотеки" },
   { path: "/constructor", label: "Конструктор" },
   { path: "/delivery", label: "Доставка" },
+  { path: "/about", label: "О нас" },
 ];
 
 export default function Navbar() {
@@ -47,7 +48,7 @@ export default function Navbar() {
       }
       setIsAuthOpen(false);
       setAuthForm({ email: "", password: "", name: "" });
-      navigate("/profile"); // ← переход в личный кабинет
+      navigate("/profile");
     } catch (err) {
       setAuthError(err.message);
     }
@@ -68,7 +69,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <Film className="w-8 h-8 text-red-500" />
-          <span className="text-2xl font-bold tracking-tight">КонтентКонструктор</span>
+          <span className="text-2xl font-bold tracking-tight">
+            КонтентКонструктор
+          </span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -88,27 +91,21 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Ссылка на профиль (иконка User + имя на десктопах) */}
               <Link
                 to="/profile"
-                className="flex items-center gap-1 text-gray-300 hover:text-red-500 transition-colors"
+                className="hidden sm:inline text-gray-300 hover:text-red-500 transition-colors"
               >
-                <User className="w-5 h-5" />
-                <span className="hidden sm:inline">
-                  {user.name || user.email}
-                </span>
+                {user.name || user.email}
               </Link>
-              {/* Кнопка выхода (иконка на мобильных, текст на десктопах) */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1 text-sm text-gray-400 hover:text-red-500 transition-colors"
               >
-                <LogOut className="w-4 h-4 sm:hidden" />
+                <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Выйти</span>
               </button>
             </div>
           ) : (
-            // Кнопка «Войти» для неавторизованных
             <button
               onClick={() => setIsAuthOpen(true)}
               className="flex items-center gap-2 hover:text-red-500 transition-colors"
