@@ -18,13 +18,16 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+// Базовая папка сайта (автоматически берётся из конфига Vite)
+const BASE_URL = import.meta.env.BASE_URL; // '/movie/'
+
 // -- Компонент для безопасной загрузки картинок --
 const ImageWithFallback = ({ src, alt, className }) => {
   const handleError = (e) => {
     e.target.onerror = null;
     e.target.style.background = "linear-gradient(135deg, #1f2937, #111827)";
     e.target.style.minHeight = "200px";
-    e.target.src = ""; // убираем битую картинку
+    e.target.src = "";
   };
   return (
     <img
@@ -62,25 +65,25 @@ const devices = [
   },
 ];
 
-// -- Варианты использования --
+// -- Варианты использования (пути к картинкам теперь с BASE_URL) --
 const useCases = [
   {
     icon: Plane,
     title: "В самолёте",
     desc: "Смотрите любимое кино без интернета.",
-    image: "/images/airplane.jpg",
+    image: `${BASE_URL}airplane.jpg`,
   },
   {
     icon: Car,
     title: "В дороге",
     desc: "Для детей на заднем сиденье — идеально.",
-    image: "/images/car.webp",
+    image: `${BASE_URL}car.webp`,
   },
   {
     icon: Tent,
     title: "На природе",
     desc: "Вечером у костра или в палатке.",
-    image: "/images/camping.jpg",
+    image: `${BASE_URL}camping.jpg`,
   },
 ];
 
@@ -177,8 +180,7 @@ export default function HomePage() {
       <section
         className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-cover bg-center"
         style={{
-          backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(/images/hero_bg.webp)",
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${BASE_URL}hero_bg.webp)`,
         }}
       >
         <motion.h1
