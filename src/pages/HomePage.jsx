@@ -46,17 +46,9 @@ const devices = [
 
 // Варианты использования
 const useCases = [
-  {
-    icon: Plane,
-    title: "В самолёте",
-    desc: "Смотрите любимое кино без интернета.",
-  },
-  {
-    icon: Car,
-    title: "В дороге",
-    desc: "Для детей на заднем сиденье — идеально.",
-  },
-  { icon: Tent, title: "На природе", desc: "Вечером у костра или в палатке." },
+  { icon: Plane, title: 'В самолёте', desc: 'Смотрите любимое кино без интернета.', image: '/images/airplane.jpg' },
+  { icon: Car,   title: 'В дороге',   desc: 'Для детей на заднем сиденье — идеально.', image: '/images/car.webp' },
+  { icon: Tent,  title: 'На природе', desc: 'Вечером у костра или в палатке.', image: '/images/camping.jpg' },
 ];
 
 // Отсылки к поп‑культуре
@@ -82,7 +74,10 @@ export default function HomePage() {
   return (
     <div className="bg-black text-white">
       {/* Экран 1: Приветствие */}
-      <section className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-zinc-900 via-black to-black">
+      <section
+  className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-zinc-900 via-black to-black"
+  style={{ backgroundImage: 'url(/images/hero_bg.webp)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+>
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
