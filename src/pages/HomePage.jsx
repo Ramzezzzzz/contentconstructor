@@ -12,13 +12,8 @@ import {
   HardDrive,
   Usb,
   Film,
-  Search,
-  Sliders,
-  CheckCircle,
-  User,
 } from "lucide-react";
-import { ImageWithFallback } from "../components/ImageWithFallback"; // путь проверьте
-import { useAuth } from "../context/AuthContext";
+import { ImageWithFallback } from "../components/ImageWithFallback";
 
 const storageDevices = [
   {
@@ -27,8 +22,7 @@ const storageDevices = [
     capacity: "32GB - 256GB",
     price: "от 2 500 ₽",
     description: "Компактное решение для небольших коллекций",
-    image:
-      "https://images.unsplash.com/photo-1551818014-7c8ace9c1b5c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=...",
+    image: "https://images.unsplash.com/photo-1551818014-7c8ace9c1b5c?...", // оставьте ваши ссылки
   },
   {
     name: "SSD накопитель",
@@ -80,15 +74,13 @@ const libraries = [
 ];
 
 export default function HomePage() {
-  const { user } = useAuth();
-
   return (
     <>
       {/* Hero Section */}
       <section className="relative h-screen w-full overflow-hidden">
         <div className="absolute inset-0">
           <ImageWithFallback
-            src="https://images.unsplash.com/photo-1766425597359-08c8f7585ba4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=..."
+            src="https://images.unsplash.com/photo-1766425597359-08c8f7585ba4?..."
             alt="Cinema atmosphere"
             className="w-full h-full object-cover"
           />
@@ -106,54 +98,36 @@ export default function HomePage() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              {/* Декоративная полоска */}
-              <div className="w-12 h-1 bg-red-500 mb-6" />
-
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-                {user
-                  ? `С возвращением, ${user.name || "друг"}!`
-                  : "Ваш кинотеатр\nна физическом носителе"}
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-none">
+                Ваш кинотеатр
+                <br />
+                на физическом
+                <br />
+                носителе
               </h1>
-
-              <p className="text-xl md:text-2xl text-gray-300/80 leading-relaxed mb-8 max-w-xl">
-                {user
-                  ? "Продолжите собирать коллекцию или выберите готовую подборку."
-                  : "Купите или арендуйте коллекцию любимых фильмов на флешке, SSD или жестком диске"}
+              <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-xl">
+                Купите или арендуйте коллекцию любимых фильмов на флешке, SSD
+                или жестком диске
               </p>
-
               <div className="flex flex-wrap gap-4">
-                {user ? (
-                  <Link to="/constructor">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-8 py-4 bg-red-600 hover:bg-red-700 transition-colors text-lg font-semibold rounded-xl shadow-xl shadow-red-600/20"
-                    >
-                      Продолжить сборку
-                    </motion.button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link to="/catalog">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-8 py-4 bg-red-600 hover:bg-red-700 transition-colors text-lg font-semibold rounded-xl shadow-xl shadow-red-600/20"
-                      >
-                        Выбрать носитель
-                      </motion.button>
-                    </Link>
-                    <Link to="/libraries">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-8 py-4 border border-white/30 hover:bg-white/10 transition-colors text-lg font-semibold rounded-xl"
-                      >
-                        Готовые библиотеки
-                      </motion.button>
-                    </Link>
-                  </>
-                )}
+                <Link to="/catalog">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-8 py-4 bg-red-600 hover:bg-red-700 transition-colors text-lg font-medium"
+                  >
+                    Выбрать носитель
+                  </motion.button>
+                </Link>
+                <Link to="/libraries">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-8 py-4 border border-white/30 hover:bg-white/10 transition-colors text-lg font-medium"
+                  >
+                    Готовые библиотеки
+                  </motion.button>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -169,60 +143,7 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* How it works */}
-      <section className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Как это работает
-            </h2>
-            <p className="text-xl text-gray-400">
-              Три простых шага к вашему кинотеатру
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Search,
-                title: "Выбираете фильмы",
-                desc: "Из готовых подборок или создайте свою коллекцию в конструкторе.",
-              },
-              {
-                icon: Sliders,
-                title: "Настраиваете носитель",
-                desc: "USB, SSD или HDD — под любой объём и бюджет.",
-              },
-              {
-                icon: CheckCircle,
-                title: "Получаете заказ",
-                desc: "Доставка по СНГ или самовывоз. Наслаждайтесь просмотром!",
-              },
-            ].map((step, index) => (
-              <motion.div
-                key={step.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-zinc-900/50 border border-white/10 rounded-2xl p-8 text-center"
-              >
-                <step.icon className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-                <p className="text-gray-400">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Storage Devices Section (оставлено с улучшенными тенями и анимацией) */}
+      {/* Storage Devices Section */}
       <section className="py-32 bg-gradient-to-b from-black to-zinc-900">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
@@ -249,8 +170,8 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
-                className="group relative overflow-hidden bg-gradient-to-b from-zinc-800/50 to-zinc-900/50 border border-white/10 hover:border-red-500/50 rounded-2xl transition-all duration-300 shadow-xl shadow-black/20 hover:shadow-red-500/5"
+                whileHover={{ y: -8 }}
+                className="group relative overflow-hidden bg-gradient-to-b from-zinc-800/50 to-zinc-900/50 border border-white/10 hover:border-red-500/50 transition-all duration-300"
               >
                 <div className="aspect-video overflow-hidden">
                   <ImageWithFallback
@@ -273,9 +194,9 @@ export default function HomePage() {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full py-3 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 transition-all rounded-xl font-medium"
+                      className="w-full py-3 bg-white/5 hover:bg-red-600 border border-white/10 hover:border-red-600 transition-all"
                     >
-                      Подробнее
+                      Добавить в корзину
                     </motion.button>
                   </Link>
                 </div>
@@ -285,7 +206,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Ready Libraries Section (улучшена компоновка) */}
+      {/* Ready Libraries Section */}
       <section className="py-32 bg-zinc-900">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
@@ -313,7 +234,7 @@ export default function HomePage() {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
-                className={`group relative overflow-hidden bg-gradient-to-br ${library.color} border ${library.borderColor} p-8 cursor-pointer rounded-2xl`}
+                className={`group relative overflow-hidden bg-gradient-to-br ${library.color} border ${library.borderColor} p-8 cursor-pointer`}
               >
                 <library.icon className="w-16 h-16 mb-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 <h3 className="text-3xl font-bold mb-2">{library.name}</h3>
@@ -330,7 +251,7 @@ export default function HomePage() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-10 py-4 bg-red-600 hover:bg-red-700 transition-colors text-lg font-semibold rounded-xl"
+                className="px-10 py-4 bg-red-600 hover:bg-red-700 transition-colors text-lg font-medium"
               >
                 Все библиотеки
               </motion.button>
@@ -339,42 +260,56 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Delivery Teaser (кратко) */}
+      {/* Delivery Section */}
       <section className="py-32 bg-gradient-to-b from-zinc-900 to-black">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
+            className="text-center mb-16"
           >
             <h2 className="text-5xl md:text-6xl font-bold mb-6">
               Доставка по СНГ
             </h2>
-            <p className="text-xl text-gray-400 mb-8">
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
               Быстрая и надежная доставка в любую точку региона
             </p>
-            <div className="flex justify-center gap-8 mb-8">
-              <div className="flex items-center gap-2 text-gray-300">
-                <Truck className="w-6 h-6 text-red-500" /> Курьером
-              </div>
-              <div className="flex items-center gap-2 text-gray-300">
-                <Package className="w-6 h-6 text-red-500" /> Почтой
-              </div>
-              <div className="flex items-center gap-2 text-gray-300">
-                <MapPin className="w-6 h-6 text-red-500" /> Самовывоз
-              </div>
-            </div>
-            <Link to="/delivery">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-red-600 hover:bg-red-700 transition-colors rounded-xl font-semibold"
-              >
-                Узнать больше
-              </motion.button>
-            </Link>
           </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {[
+              {
+                icon: Truck,
+                title: "Курьером",
+                desc: "1-3 дня в пределах города",
+              },
+              {
+                icon: Package,
+                title: "Почтой",
+                desc: "5-14 дней в любую точку СНГ",
+              },
+              {
+                icon: MapPin,
+                title: "Самовывоз",
+                desc: "Бесплатно из пункта выдачи",
+              },
+            ].map((method, index) => (
+              <motion.div
+                key={method.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="text-center p-8 bg-white/5 border border-white/10"
+              >
+                <method.icon className="w-12 h-12 mx-auto mb-4 text-red-500" />
+                <h3 className="text-xl font-bold mb-2">{method.title}</h3>
+                <p className="text-gray-400">{method.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
     </>
