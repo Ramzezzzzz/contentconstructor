@@ -65,20 +65,21 @@ export default function Navbar() {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/10"
     >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <Film className="w-8 h-8 text-red-500" />
-          <span className="text-2xl font-bold tracking-tight">
-            КонтентКонструктор
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <Film className="w-7 h-7 sm:w-8 sm:h-8 text-red-500" />
+          <span className="text-xl sm:text-2xl font-bold tracking-tight truncate">
+            <span className="hidden sm:inline">КонтентКонструктор</span>
+            <span className="sm:hidden">КК</span>
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`hover:text-red-500 transition-colors ${
+              className={`hover:text-red-500 transition-colors text-sm lg:text-base ${
                 location.pathname === link.path ? "text-red-500" : ""
               }`}
             >
@@ -87,12 +88,12 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 to="/profile"
-                className="hidden sm:inline text-gray-300 hover:text-red-500 transition-colors"
+                className="text-sm text-gray-300 hover:text-red-500 transition-colors hidden sm:block"
               >
                 {user.name || user.email}
               </Link>
@@ -107,16 +108,16 @@ export default function Navbar() {
           ) : (
             <button
               onClick={() => setIsAuthOpen(true)}
-              className="flex items-center gap-2 hover:text-red-500 transition-colors"
+              className="flex items-center gap-1 hover:text-red-500 transition-colors"
             >
               <User className="w-5 h-5" />
-              <span className="hidden sm:inline">Войти</span>
+              <span className="hidden sm:inline text-sm">Войти</span>
             </button>
           )}
 
           <Link
             to="/cart"
-            className="relative flex items-center gap-2 hover:text-red-500 transition-colors"
+            className="relative flex items-center hover:text-red-500 transition-colors"
           >
             <ShoppingCart className="w-5 h-5" />
             {totalItems > 0 && (
@@ -166,7 +167,7 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Модалка авторизации (исправлена, больше не обрезается) */}
+      {/* Модалка авторизации – центрирована, без обрезания */}
       <AnimatePresence>
         {isAuthOpen && !user && (
           <motion.div
@@ -177,50 +178,24 @@ export default function Navbar() {
             onClick={() => setIsAuthOpen(false)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 30 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 30 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md max-h-[90vh] bg-zinc-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-lg relative"
+              className="w-full max-w-md max-h-[85vh] bg-zinc-900/95 border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-sm"
             >
-              {/* Крестик закрытия */}
-              <button
-                onClick={() => setIsAuthOpen(false)}
-                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
-                aria-label="Закрыть"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="p-5 sm:p-8 max-h-[calc(100vh-6rem)] sm:max-h-[80vh] overflow-y-auto">
-                {/* Вкладки */}
-                <div className="flex mb-8 bg-zinc-800/50 rounded-xl p-1">
+              <div className="p-5 sm:p-8 overflow-y-auto max-h-[85vh]">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">
+                    {authMode === "login" ? "Вход" : "Регистрация"}
+                  </h2>
                   <button
-                    onClick={() => {
-                      setAuthMode("login");
-                      setAuthError("");
-                    }}
-                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                      authMode === "login"
-                        ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
-                        : "text-gray-400 hover:text-white"
-                    }`}
+                    onClick={() => setIsAuthOpen(false)}
+                    className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                    aria-label="Закрыть"
                   >
-                    Вход
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAuthMode("register");
-                      setAuthError("");
-                    }}
-                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                      authMode === "register"
-                        ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
-                        : "text-gray-400 hover:text-white"
-                    }`}
-                  >
-                    Регистрация
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
 
@@ -240,7 +215,7 @@ export default function Navbar() {
                     e.preventDefault();
                     handleAuthSubmit(e);
                   }}
-                  className="space-y-5"
+                  className="space-y-4"
                 >
                   {authMode === "register" && (
                     <div>
@@ -307,7 +282,6 @@ export default function Navbar() {
                   </button>
                 </form>
 
-                {/* Разделитель */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-white/10"></div>
@@ -319,7 +293,6 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                {/* Социальные кнопки */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     disabled
@@ -338,6 +311,38 @@ export default function Navbar() {
                     Telegram
                   </button>
                 </div>
+
+                <p className="text-center text-sm text-gray-400 mt-6">
+                  {authMode === "login" ? (
+                    <>
+                      Нет аккаунта?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode("register");
+                          setAuthError("");
+                        }}
+                        className="text-red-500 hover:underline font-medium"
+                      >
+                        Зарегистрироваться
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Уже есть аккаунт?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode("login");
+                          setAuthError("");
+                        }}
+                        className="text-red-500 hover:underline font-medium"
+                      >
+                        Войти
+                      </button>
+                    </>
+                  )}
+                </p>
               </div>
             </motion.div>
           </motion.div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -16,10 +16,12 @@ import {
   Usb,
   Database,
   HardDrive,
-  Zap,
   TrendingUp,
+  Zap,
   Tv,
   Calendar,
+  Volume2,
+  MonitorPlay,
 } from "lucide-react";
 import AnimatedPage from "../components/AnimatedPage";
 import { useAuth } from "../context/AuthContext";
@@ -28,7 +30,6 @@ import { Link } from "react-router-dom";
 const API_KEY = "7fd95d4b-d51b-4959-9e36-408eb4dcba93";
 const API_BASE = "/movie/api";
 
-// ---------- Типы носителей ----------
 const deviceTypes = {
   usb: {
     icon: Usb,
@@ -53,23 +54,24 @@ const deviceTypes = {
   },
 };
 
-// ---------- Готовые подборки (кнопки) ----------
 const collectionsQuick = [
   {
     key: "top250",
     label: "ТОП 250",
     icon: TrendingUp,
     endpoint: "/films/top",
-    params: "type=TOP_250_BEST_FILMS",
+    params: "type=TOP_250_BEST_FILMS&page=1",
     color: "from-amber-600/20 to-amber-600/5",
+    apiVersion: "v2.2",
   },
   {
     key: "popular",
     label: "Популярное",
     icon: Zap,
     endpoint: "/films/top",
-    params: "type=TOP_100_POPULAR_FILMS",
+    params: "type=TOP_100_POPULAR_FILMS&page=1",
     color: "from-orange-600/20 to-orange-600/5",
+    apiVersion: "v2.2",
   },
   {
     key: "series",
@@ -87,10 +89,10 @@ const collectionsQuick = [
     endpoint: "/films/premieres",
     params: "year=2026&month=JANUARY",
     color: "from-purple-600/20 to-purple-600/5",
+    apiVersion: "v2.2",
   },
 ];
 
-// ---------- Работающие жанры ----------
 const genres = [
   { name: "Боевик", keyword: "боевик", icon: Monitor },
   { name: "Комедия", keyword: "комедия", icon: Users },
@@ -98,13 +100,12 @@ const genres = [
   { name: "Документальное", keyword: "документальный", icon: BookOpen },
 ];
 
-// ---------- Компонент для загрузки фильмов (из готовых подборок или поиска) ----------
 async function fetchMovies(endpoint, params, apiVersion = "v2.2") {
   const base =
     apiVersion === "v2.1"
       ? "https://kinopoiskapiunofficial.tech/api/v2.1"
       : "https://kinopoiskapiunofficial.tech/api/v2.2";
-  const url = `${base}${endpoint}?${params}`;
+  const url = `${base}${endpoint}?${params}&api_key=${API_KEY}`; // иногда надо api_key, но в v2.1/2.2 не используется? Оставим заголовок
   try {
     const res = await fetch(url, {
       headers: { "X-API-KEY": API_KEY, "Content-Type": "application/json" },
@@ -118,10 +119,9 @@ async function fetchMovies(endpoint, params, apiVersion = "v2.2") {
   }
 }
 
-// ---------- Визуальная флешка ----------
 function StorageFiller({ collection, type, onChangeType, onRemove }) {
   const device = deviceTypes[type];
-  const totalSize = collection.length * 2.5; // ~2.5 ГБ/фильм
+  const totalSize = collection.length * 2.5;
   const fillPercent = Math.min(100, (totalSize / device.maxCapacity) * 100);
 
   return (
@@ -140,15 +140,13 @@ function StorageFiller({ collection, type, onChangeType, onRemove }) {
           ))}
         </select>
       </div>
-
-      <div className="relative bg-black/50 border border-white/10 rounded-2xl p-4 mb-4 overflow-hidden">
+      <div className="relative bg-black/50 border border-white/10 rounded-2xl p-4 mb-4">
         <div className="flex justify-between items-center mb-3">
           <device.icon className="w-8 h-8 text-white/80" />
           <span className="text-sm text-gray-400">
             {totalSize.toFixed(1)} из {device.maxCapacity} {device.label}
           </span>
         </div>
-
         <div className="w-full h-3 bg-zinc-700 rounded-full mb-4 overflow-hidden">
           <motion.div
             className={`h-full bg-gradient-to-r ${device.color} rounded-full`}
@@ -157,7 +155,6 @@ function StorageFiller({ collection, type, onChangeType, onRemove }) {
             transition={{ type: "spring", stiffness: 100, damping: 20 }}
           />
         </div>
-
         <div className="grid grid-cols-4 gap-2 min-h-[80px]">
           <AnimatePresence>
             {collection.map((movie) => (
@@ -190,7 +187,7 @@ function StorageFiller({ collection, type, onChangeType, onRemove }) {
           </AnimatePresence>
           {collection.length === 0 && (
             <div className="col-span-4 flex items-center justify-center text-gray-500 text-sm py-4">
-              Добавьте фильм, чтобы заполнить носитель
+              Добавьте фильм
             </div>
           )}
         </div>
@@ -199,7 +196,71 @@ function StorageFiller({ collection, type, onChangeType, onRemove }) {
   );
 }
 
-// ================== ГЛАВНАЯ СТРАНИЦА (КОНСТРУКТОР + БИБЛИОТЕКИ) ==================
+function MovieModal({ movie, onClose, isInCollection, onAdd }) {
+  const id = movie.filmId || movie.kinopoiskId;
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[120] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full md:max-w-lg bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden max-h-[90vh] flex flex-col"
+      >
+        <div className="relative h-48 sm:h-64 overflow-hidden">
+          <img
+            src={movie.posterUrl || ""}
+            alt={movie.nameRu}
+            className="w-full h-full object-cover"
+          />
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-5 flex-1 overflow-y-auto">
+          <h2 className="text-2xl font-bold mb-2">
+            {movie.nameRu || movie.nameEn}
+          </h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+            <span className="text-xl font-bold">{movie.rating}</span>
+            <span className="text-gray-400 text-sm">({movie.year || "—"})</span>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs flex items-center gap-1">
+              <MonitorPlay className="w-3 h-3" /> 1080p
+            </span>
+            <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs flex items-center gap-1">
+              <Volume2 className="w-3 h-3" /> RUS
+            </span>
+          </div>
+          <button
+            onClick={onAdd}
+            disabled={isInCollection}
+            className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+              isInCollection
+                ? "bg-green-600 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {isInCollection ? "В коллекции" : "Добавить в коллекцию"}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function ConstructorPage() {
   const { user, token } = useAuth();
   const [query, setQuery] = useState("");
@@ -208,11 +269,12 @@ export default function ConstructorPage() {
   const [collection, setCollection] = useState([]);
   const [deviceType, setDeviceType] = useState("usb");
   const [initialLoad, setInitialLoad] = useState(true);
-  const [activeMode, setActiveMode] = useState(null); // null | 'search' | 'top250' | ...
-  const [activeGenre, setActiveGenre] = useState(null); // название жанра или null
+  const [activeMode, setActiveMode] = useState("top250"); // по умолчанию ТОП 250
+  const [activeGenre, setActiveGenre] = useState(null);
+  const [selectedMovie, setSelectedMovie] = useState(null);
   const searchInputRef = useRef(null);
 
-  // Загрузка коллекции с сервера
+  // Загрузка коллекции
   useEffect(() => {
     if (!user || !token) {
       setInitialLoad(false);
@@ -226,27 +288,25 @@ export default function ConstructorPage() {
         const data = await res.json();
         if (Array.isArray(data)) setCollection(data);
       } catch (err) {
-        console.error("Ошибка загрузки коллекции:", err);
+        console.error(err);
       } finally {
         setInitialLoad(false);
       }
     })();
   }, [user, token]);
 
-  // Загрузка фильмов при смене режима или поискового запроса
+  // Загрузка фильмов при смене режима/жанра/поиска
   const loadMovies = useCallback(async () => {
     setLoading(true);
     let movies = [];
     try {
       if (activeMode === "search" && query.trim().length >= 2) {
-        // Поиск по названию
         movies = await fetchMovies(
           "/films/search-by-keyword",
           `keyword=${encodeURIComponent(query)}`,
           "v2.1"
         );
       } else if (activeMode && activeMode.startsWith("genre:")) {
-        // Поиск по жанру (ключевому слову)
         const keyword = activeMode.replace("genre:", "");
         movies = await fetchMovies(
           "/films/search-by-keyword",
@@ -257,7 +317,6 @@ export default function ConstructorPage() {
         activeMode &&
         collectionsQuick.some((c) => c.key === activeMode)
       ) {
-        // Готовая подборка
         const coll = collectionsQuick.find((c) => c.key === activeMode);
         movies = await fetchMovies(
           coll.endpoint,
@@ -276,11 +335,10 @@ export default function ConstructorPage() {
     loadMovies();
   }, [loadMovies]);
 
-  // Добавление в коллекцию
   const addToCollection = async (movie) => {
     if (!user || !token) return;
-    const movieId = movie.filmId;
-    if (collection.some((item) => item.kinopoisk_id === movieId)) return;
+    const movieId = movie.filmId || movie.kinopoiskId;
+    if (collection.some((item) => item.kinopoisk_id == movieId)) return;
     try {
       const res = await fetch(`${API_BASE}/collection.php`, {
         method: "POST",
@@ -312,7 +370,6 @@ export default function ConstructorPage() {
     }
   };
 
-  // Удаление из коллекции
   const removeFromCollection = async (kinopoiskId) => {
     if (!user || !token) return;
     try {
@@ -324,12 +381,10 @@ export default function ConstructorPage() {
         },
         body: JSON.stringify({ kinopoisk_id: kinopoiskId }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Ошибка удаления");
-      }
+      if (!res.ok)
+        throw new Error((await res.json()).error || "Ошибка удаления");
       setCollection((prev) =>
-        prev.filter((item) => item.kinopoisk_id !== kinopoiskId)
+        prev.filter((item) => item.kinopoisk_id != kinopoiskId)
       );
     } catch (err) {
       console.error(err);
