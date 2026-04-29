@@ -4,7 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import { CartProvider } from "./context/CartContext";
-import { AuthProvider } from "./context/AuthContext"; // новый импорт
+import { AuthProvider } from "./context/AuthContext";
+import ScrollToTop from "./components/ScrollToTop"; // ← обязательно
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
