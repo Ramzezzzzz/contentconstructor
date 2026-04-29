@@ -99,9 +99,8 @@ export default function HomePage() {
       {/* Экран 1: Герой */}
       <section className="relative min-h-screen flex items-center justify-center text-center px-6 overflow-hidden">
         <motion.div
-          style={{ y }}
+          style={{ y, backgroundImage: `url(${BASE_URL}hero_bg.webp)` }}
           className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: `url(${BASE_URL}hero_bg.webp)` }}
         />
         <div className="relative z-10 max-w-4xl">
           <motion.h1
