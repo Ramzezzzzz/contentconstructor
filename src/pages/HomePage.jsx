@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Search, Star, Plane, Car, Tent, ArrowRight, Film } from "lucide-react";
+import { Search, Star, Plane, Car, Tent, ArrowRight } from "lucide-react";
 
 const BASE_URL = import.meta.env.BASE_URL; // '/movie/'
 
@@ -10,19 +10,19 @@ const useCases = [
     icon: Plane,
     title: "В самолёте",
     desc: "Смотрите без интернета в полёте.",
-    image: `${BASE_URL}airplane.jpg`,
+    image: `${BASE_URL}images/airplane.jpg`,
   },
   {
     icon: Car,
     title: "В дороге",
     desc: "Займите детей в автомобиле.",
-    image: `${BASE_URL}car.webp`,
+    image: `${BASE_URL}images/car.webp`,
   },
   {
     icon: Tent,
     title: "На природе",
     desc: "Кинотеатр у костра.",
-    image: `${BASE_URL}camping.jpg`,
+    image: `${BASE_URL}images/camping.jpg`,
   },
 ];
 
@@ -90,8 +90,6 @@ function MiniConstructor() {
 
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
-
-  // Параллакс для фона
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
@@ -99,8 +97,8 @@ export default function HomePage() {
       {/* Экран 1: Герой */}
       <section className="relative min-h-screen flex items-center justify-center text-center px-6 overflow-hidden">
         <motion.div
-          style={{ y, backgroundImage: `url(${BASE_URL}hero_bg.webp)` }}
-          className="absolute inset-0 bg-cover bg-center opacity-30"
+          style={{ y, backgroundImage: `url(${BASE_URL}images/hero_bg.webp)` }}
+          className="absolute inset-0 bg-cover bg-center opacity-40"
         />
         <div className="relative z-10 max-w-4xl">
           <motion.h1

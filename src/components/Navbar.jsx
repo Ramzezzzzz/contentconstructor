@@ -167,7 +167,7 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Модалка авторизации */}
+      {/* Модалка авторизации (исправлена, больше не обрезается) */}
       <AnimatePresence>
         {isAuthOpen && !user && (
           <motion.div
