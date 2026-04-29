@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -20,8 +20,8 @@ import {
   Zap,
   Tv,
   Calendar,
-  Volume2,
   MonitorPlay,
+  Volume2,
 } from "lucide-react";
 import AnimatedPage from "../components/AnimatedPage";
 import { useAuth } from "../context/AuthContext";
@@ -61,7 +61,6 @@ const collectionsQuick = [
     icon: TrendingUp,
     endpoint: "/films/top",
     params: "type=TOP_250_BEST_FILMS&page=1",
-    color: "from-amber-600/20 to-amber-600/5",
     apiVersion: "v2.2",
   },
   {
@@ -70,7 +69,6 @@ const collectionsQuick = [
     icon: Zap,
     endpoint: "/films/top",
     params: "type=TOP_100_POPULAR_FILMS&page=1",
-    color: "from-orange-600/20 to-orange-600/5",
     apiVersion: "v2.2",
   },
   {
@@ -79,7 +77,6 @@ const collectionsQuick = [
     icon: Tv,
     endpoint: "/films/search-by-keyword",
     params: "keyword=сериал",
-    color: "from-blue-600/20 to-blue-600/5",
     apiVersion: "v2.1",
   },
   {
@@ -88,7 +85,6 @@ const collectionsQuick = [
     icon: Calendar,
     endpoint: "/films/premieres",
     params: "year=2026&month=JANUARY",
-    color: "from-purple-600/20 to-purple-600/5",
     apiVersion: "v2.2",
   },
 ];
@@ -105,16 +101,14 @@ async function fetchMovies(endpoint, params, apiVersion = "v2.2") {
     apiVersion === "v2.1"
       ? "https://kinopoiskapiunofficial.tech/api/v2.1"
       : "https://kinopoiskapiunofficial.tech/api/v2.2";
-  const url = `${base}${endpoint}?${params}&api_key=${API_KEY}`; // иногда надо api_key, но в v2.1/2.2 не используется? Оставим заголовок
+  const url = `${base}${endpoint}?${params}`;
   try {
-    const res = await fetch(url, {
-      headers: { "X-API-KEY": API_KEY, "Content-Type": "application/json" },
-    });
+    const res = await fetch(url, { headers: { "X-API-KEY": API_KEY } });
     if (!res.ok) return [];
     const data = await res.json();
     return data.films?.slice(0, 20) || [];
   } catch (error) {
-    console.error("Ошибка загрузки:", error);
+    console.error(error);
     return [];
   }
 }
@@ -168,7 +162,7 @@ function StorageFiller({ collection, type, onChangeType, onRemove }) {
                 <img
                   src={
                     movie.poster_url ||
-                    "https://via.placeholder.com/80x120?text=..."
+                    "https://via.placeholder.com/80x120?text="
                   }
                   alt={movie.title}
                   className="w-full h-auto object-cover rounded-lg border border-white/10"
@@ -197,7 +191,7 @@ function StorageFiller({ collection, type, onChangeType, onRemove }) {
 }
 
 function MovieModal({ movie, onClose, isInCollection, onAdd }) {
-  const id = movie.filmId || movie.kinopoiskId;
+  if (!movie) return null;
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -269,12 +263,11 @@ export default function ConstructorPage() {
   const [collection, setCollection] = useState([]);
   const [deviceType, setDeviceType] = useState("usb");
   const [initialLoad, setInitialLoad] = useState(true);
-  const [activeMode, setActiveMode] = useState("top250"); // по умолчанию ТОП 250
+  const [activeMode, setActiveMode] = useState("top250");
   const [activeGenre, setActiveGenre] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const searchInputRef = useRef(null);
 
-  // Загрузка коллекции
   useEffect(() => {
     if (!user || !token) {
       setInitialLoad(false);
@@ -295,7 +288,6 @@ export default function ConstructorPage() {
     })();
   }, [user, token]);
 
-  // Загрузка фильмов при смене режима/жанра/поиска
   const loadMovies = useCallback(async () => {
     setLoading(true);
     let movies = [];
@@ -392,34 +384,24 @@ export default function ConstructorPage() {
     }
   };
 
-  // Обработчики кнопок
   const handleCollectionClick = (key) => {
     setActiveGenre(null);
     setActiveMode(key);
     setQuery("");
   };
-
   const handleGenreClick = (genre) => {
     setActiveMode(`genre:${genre.keyword}`);
     setActiveGenre(genre.name);
     setQuery("");
   };
-
   const handleSearchChange = (e) => {
     setQuery(e.target.value);
     if (e.target.value.trim().length >= 2) {
       setActiveMode("search");
       setActiveGenre(null);
     } else {
-      setActiveMode(null);
+      setActiveMode("top250");
     }
-  };
-
-  const clearSearch = () => {
-    setQuery("");
-    setActiveMode(null);
-    setActiveGenre(null);
-    searchInputRef.current?.focus();
   };
 
   if (initialLoad)
@@ -451,8 +433,7 @@ export default function ConstructorPage() {
               сохраняйте фильмы на носитель.
             </p>
           </motion.div>
-
-          {/* Вкладки готовых подборок */}
+          {/* Вкладки подборок */}
           <div className="flex flex-wrap justify-center gap-3 mb-6">
             {collectionsQuick.map((col) => (
               <button
@@ -469,8 +450,7 @@ export default function ConstructorPage() {
               </button>
             ))}
           </div>
-
-          {/* Поисковая строка */}
+          {/* Поиск */}
           <div className="relative max-w-2xl mx-auto mb-6">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -479,13 +459,16 @@ export default function ConstructorPage() {
                 type="text"
                 value={query}
                 onChange={handleSearchChange}
-                placeholder="Поиск по названию фильма..."
+                placeholder="Поиск по названию..."
                 className="w-full py-4 pl-12 pr-12 bg-zinc-800/50 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:border-red-500 outline-none transition-colors text-lg"
               />
               {query && (
                 <button
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:text-red-500 transition-colors"
+                  onClick={() => {
+                    setQuery("");
+                    setActiveMode("top250");
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:text-red-500"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -497,8 +480,7 @@ export default function ConstructorPage() {
               </div>
             )}
           </div>
-
-          {/* Жанровые фильтры */}
+          {/* Жанры */}
           <div className="flex justify-center flex-wrap gap-3 mb-8">
             {genres.map((genre) => (
               <button
@@ -515,42 +497,39 @@ export default function ConstructorPage() {
               </button>
             ))}
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Результаты фильмов */}
             <div className="lg:col-span-2">
               {results.length > 0 ? (
                 <div>
                   <h2 className="text-2xl font-bold mb-6">
                     {activeMode === "search"
-                      ? `Результаты поиска: "${query}"`
+                      ? `Поиск: ${query}`
                       : activeGenre
                       ? `Жанр: ${activeGenre}`
-                      : activeMode
-                      ? collectionsQuick.find((c) => c.key === activeMode)
-                          ?.label
-                      : "Фильмы"}
+                      : collectionsQuick.find((c) => c.key === activeMode)
+                          ?.label}
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     <AnimatePresence>
                       {results.map((movie) => (
                         <motion.div
-                          key={movie.filmId}
+                          key={movie.filmId || movie.kinopoiskId}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
                           className="relative overflow-hidden rounded-xl bg-zinc-800/50 border border-white/10 group"
+                          onClick={() => setSelectedMovie(movie)}
                         >
                           <img
                             src={
                               movie.posterUrl ||
-                              "https://via.placeholder.com/300x450?text=Нет+постера"
+                              "https://via.placeholder.com/300x450?text=Нет постера"
                             }
                             alt={movie.nameRu}
                             className="w-full h-52 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
                               e.target.src =
-                                "https://via.placeholder.com/300x450?text=Нет+постера";
+                                "https://via.placeholder.com/300x450?text=Нет постера";
                             }}
                             loading="lazy"
                           />
@@ -564,12 +543,16 @@ export default function ConstructorPage() {
                                 <span>{movie.rating}</span>
                               </div>
                               <button
-                                onClick={() => addToCollection(movie)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addToCollection(movie);
+                                }}
                                 disabled={collection.some(
-                                  (m) => m.kinopoisk_id === movie.filmId
+                                  (m) =>
+                                    m.kinopoisk_id ==
+                                    (movie.filmId || movie.kinopoiskId)
                                 )}
                                 className="p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                                aria-label="Добавить в коллекцию"
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
@@ -583,21 +566,12 @@ export default function ConstructorPage() {
               ) : (
                 <div className="text-center py-16 text-gray-400">
                   <Film className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  <p className="text-lg mb-2">
-                    {!activeMode
-                      ? "Выберите подборку, жанр или начните поиск"
-                      : loading
-                      ? "Загрузка..."
-                      : "Ничего не найдено"}
-                  </p>
-                  <p className="text-sm">
-                    Попробуйте изменить запрос или выбрать другую категорию
+                  <p className="text-lg">
+                    {loading ? "Загрузка..." : "Ничего не найдено"}
                   </p>
                 </div>
               )}
             </div>
-
-            {/* Панель коллекции */}
             <div className="space-y-6">
               <StorageFiller
                 collection={collection}
@@ -615,6 +589,23 @@ export default function ConstructorPage() {
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {selectedMovie && (
+          <MovieModal
+            movie={selectedMovie}
+            onClose={() => setSelectedMovie(null)}
+            isInCollection={collection.some(
+              (m) =>
+                m.kinopoisk_id ==
+                (selectedMovie.filmId || selectedMovie.kinopoiskId)
+            )}
+            onAdd={() => {
+              addToCollection(selectedMovie);
+              setSelectedMovie(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </AnimatedPage>
   );
 }
