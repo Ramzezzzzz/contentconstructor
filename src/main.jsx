@@ -9,9 +9,8 @@ import { AuthProvider } from "./context/AuthContext"; // новый импорт
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter basename="/movie">
+      <ScrollToTop />
       <AuthProvider>
-        {" "}
-        {/* ← оборачиваем всё в AuthProvider */}
         <CartProvider>
           <App />
         </CartProvider>
