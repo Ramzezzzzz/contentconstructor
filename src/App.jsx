@@ -11,6 +11,7 @@ import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ProfilePage from "./pages/ProfilePage";
 import AboutPage from "./pages/AboutPage";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const location = useLocation();
