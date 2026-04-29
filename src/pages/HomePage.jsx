@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  AnimatePresence,
+} from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -15,45 +20,14 @@ import {
   Shield,
   Zap,
   Truck,
+  Play,
+  Pause,
+  RefreshCw,
+  User,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext"; // авторизация
 
 const BASE_URL = import.meta.env.BASE_URL; // '/movie/'
-
-// Популярные фильмы для витрины
-const popularFilms = [
-  {
-    id: 1,
-    title: "Интерстеллар",
-    year: 2014,
-    rating: 8.6,
-    poster:
-      "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/4e1e85e1-2a4c-4f8d-8bcb-4d4e8e5e3c5f/300x450",
-  },
-  {
-    id: 2,
-    title: "Начало",
-    year: 2010,
-    rating: 8.7,
-    poster:
-      "https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/4c8b29d0-9b5c-4b4e-8b4b-8f5c2a7d7c1a/300x450",
-  },
-  {
-    id: 3,
-    title: "Побег из Шоушенка",
-    year: 1994,
-    rating: 9.1,
-    poster:
-      "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/4c0d8e0a-7f1c-4c8e-8b4b-4f4d4d7e4b4f/300x450",
-  },
-  {
-    id: 4,
-    title: "Тёмный рыцарь",
-    year: 2008,
-    rating: 9.0,
-    poster:
-      "https://avatars.mds.yandex.net/get-kinopoisk-image/1629390/4e1b8ec7-3c68-4b1b-8b4b-4d8e5f5c4d4f/300x450",
-  },
-];
 
 // Варианты использования
 const useCases = [
@@ -77,49 +51,9 @@ const useCases = [
   },
 ];
 
-/* ================== Витрина популярных фильмов ================== */
-function PopularFilmShowcase() {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
-      {popularFilms.map((film, idx) => (
-        <motion.div
-          key={film.id}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: idx * 0.1 }}
-          className="relative group cursor-pointer overflow-hidden rounded-2xl bg-zinc-800/30 border border-white/10"
-        >
-          <img
-            src={film.poster}
-            alt={film.title}
-            className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
-            <h3 className="text-lg font-bold truncate">{film.title}</h3>
-            <div className="flex items-center gap-1 text-sm text-yellow-400">
-              <Star className="w-4 h-4 fill-current" />
-              {film.rating}
-              <span className="text-gray-400 ml-2">{film.year}</span>
-            </div>
-          </div>
-          <Link
-            to="/constructor"
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <span className="px-6 py-3 bg-red-600 rounded-xl font-semibold shadow-lg">
-              Добавить в коллекцию
-            </span>
-          </Link>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-/* ================== Экран 1: Герой ================== */
+/* ================== Экран 1: Герой с персонализацией ================== */
 function Hero() {
+  const { user } = useAuth();
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
@@ -136,7 +70,9 @@ function Hero() {
           transition={{ duration: 0.8 }}
           className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6"
         >
-          Твой офлайн‑кинотеатр
+          {user
+            ? `С возвращением, ${user.name || "друг"}!`
+            : "Твой офлайн‑кинотеатр"}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
@@ -144,20 +80,39 @@ function Hero() {
           transition={{ delay: 0.3 }}
           className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-12"
         >
-          Коллекции фильмов на USB, SSD и жёстких дисках. Смотри где угодно, без
-          интернета.
+          {user
+            ? "Ваша коллекция ждёт. Продолжите наполнять её или выберите готовую подборку."
+            : "Коллекции фильмов на USB, SSD и жёстких дисках. Смотри где угодно, без интернета."}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <Link
-            to="/constructor"
-            className="inline-flex items-center gap-2 px-10 py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-xl font-semibold shadow-2xl shadow-red-600/30 transition-all active:scale-95"
-          >
-            Создать коллекцию <ArrowRight className="w-6 h-6" />
-          </Link>
+          {user ? (
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link
+                to="/constructor"
+                className="px-10 py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-xl font-semibold shadow-2xl shadow-red-600/30 transition-all active:scale-95"
+              >
+                Продолжить сборку
+              </Link>
+              <Link
+                to="/profile"
+                className="px-10 py-5 border border-white/30 hover:bg-white/10 rounded-2xl text-xl font-semibold transition-all active:scale-95 inline-flex items-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                Личный кабинет
+              </Link>
+            </div>
+          ) : (
+            <Link
+              to="/constructor"
+              className="inline-flex items-center gap-2 px-10 py-5 bg-red-600 hover:bg-red-700 rounded-2xl text-xl font-semibold shadow-2xl shadow-red-600/30 transition-all active:scale-95"
+            >
+              Создать коллекцию <ArrowRight className="w-6 h-6" />
+            </Link>
+          )}
         </motion.div>
       </div>
       <motion.div
@@ -172,10 +127,64 @@ function Hero() {
   );
 }
 
-/* ================== Экран 2: Популярные фильмы ================== */
-function PopularFilms() {
+/* ================== Экран 2: Как это работает (интерактивная демонстрация) ================== */
+function HowItWorks() {
+  const [step, setStep] = useState(0); // 0 - выбор, 1 - анимация, 2 - готово
+  const [selectedFilm, setSelectedFilm] = useState(null);
+  const [showCatalog, setShowCatalog] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const demofilms = [
+    {
+      id: 1,
+      title: "Интерстеллар",
+      year: 2014,
+      rating: 8.6,
+      poster:
+        "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/4e1e85e1-2a4c-4f8d-8bcb-4d4e8e5e3c5f/80x120",
+    },
+    {
+      id: 2,
+      title: "Начало",
+      year: 2010,
+      rating: 8.7,
+      poster:
+        "https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/4c8b29d0-9b5c-4b4e-8b4b-8f5c2a7d7c1a/80x120",
+    },
+    {
+      id: 3,
+      title: "Побег из Шоушенка",
+      year: 1994,
+      rating: 9.1,
+      poster:
+        "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/4c0d8e0a-7f1c-4c8e-8b4b-4f4d4d7e4b4f/80x120",
+    },
+    {
+      id: 4,
+      title: "Тёмный рыцарь",
+      year: 2008,
+      rating: 9.0,
+      poster:
+        "https://avatars.mds.yandex.net/get-kinopoisk-image/1629390/4e1b8ec7-3c68-4b1b-8b4b-4d8e5f5c4d4f/80x120",
+    },
+  ];
+
+  const handleSelectFilm = (film) => {
+    if (isAnimating) return;
+    setSelectedFilm(film);
+    setShowCatalog(false);
+    setStep(1);
+    setIsAnimating(true);
+
+    // Через время завершаем анимацию
+    setTimeout(() => {
+      setStep(2);
+      setIsAnimating(false);
+    }, 1500);
+  };
+
   return (
-    <section className="py-32 bg-gradient-to-b from-black to-zinc-900">
+    <section className="py-32 bg-gradient-to-b from-zinc-900 to-black relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 text-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -183,30 +192,146 @@ function PopularFilms() {
           viewport={{ once: true }}
           className="text-4xl md:text-5xl font-bold mb-6"
         >
-          Начните с любимого фильма
+          Как это работает
         </motion.h2>
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto"
+          className="text-xl text-gray-400 mb-16 max-w-2xl mx-auto"
         >
-          Просто выберите — и мы поможем собрать полную коллекцию.
+          Пара кликов – и ваш фильм уже на носителе.
         </motion.p>
-        <PopularFilmShowcase />
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-12"
-        >
-          <Link
-            to="/constructor"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
-          >
-            Открыть конструктор <ArrowRight className="w-5 h-5" />
-          </Link>
-        </motion.div>
+
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-12">
+          {/* Левая сторона: каталог или выбранный фильм */}
+          <div className="w-full lg:w-1/2 flex flex-col items-center">
+            {step === 0 && !showCatalog && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCatalog(true)}
+                className="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold text-lg shadow-xl shadow-red-600/20"
+              >
+                Выбрать фильм
+              </motion.button>
+            )}
+
+            {showCatalog && step === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl"
+              >
+                {demofilms.map((film) => (
+                  <div
+                    key={film.id}
+                    onClick={() => handleSelectFilm(film)}
+                    className="bg-zinc-800/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-red-500/50 transition-all"
+                  >
+                    <img
+                      src={film.poster}
+                      alt={film.title}
+                      className="w-full h-32 object-cover"
+                    />
+                    <div className="p-2 text-xs font-medium truncate">
+                      {film.title}
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+            {step >= 1 && selectedFilm && (
+              <motion.div
+                layoutId={`film-${selectedFilm.id}`}
+                className="bg-zinc-800/30 border border-white/10 rounded-2xl p-4 flex items-center gap-4 w-64 relative z-10"
+              >
+                <img
+                  src={selectedFilm.poster}
+                  alt=""
+                  className="w-16 h-24 object-cover rounded-lg"
+                />
+                <div className="text-left">
+                  <h3 className="font-bold">{selectedFilm.title}</h3>
+                  <p className="text-sm text-gray-400">
+                    {selectedFilm.year} • {selectedFilm.rating}
+                  </p>
+                </div>
+                {step === 2 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1"
+                  >
+                    <Star className="w-4 h-4 text-white fill-current" />
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Правая сторона: флешка и прогресс */}
+          <div className="w-full lg:w-1/2 flex flex-col items-center">
+            <div className="relative w-48 h-48 bg-zinc-800/30 border border-white/10 rounded-3xl flex items-center justify-center shadow-xl mb-4">
+              <Usb className="w-16 h-16 text-red-400" />
+              {/* Анимация полета карточки к флешке */}
+              <AnimatePresence>
+                {isAnimating && selectedFilm && (
+                  <motion.div
+                    key={`flying-${selectedFilm.id}`}
+                    initial={{ opacity: 1, x: -200, y: 0, scale: 1 }}
+                    animate={{ opacity: 0, x: 0, y: 0, scale: 0.2 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                    className="absolute z-20"
+                  >
+                    <img
+                      src={selectedFilm.poster}
+                      alt=""
+                      className="w-16 h-24 object-cover rounded-lg"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Прогресс-бар */}
+            <div className="w-48 h-2 bg-zinc-700 rounded-full overflow-hidden mb-4">
+              <motion.div
+                className="h-full bg-gradient-to-r from-red-500 to-orange-400 rounded-full"
+                initial={{ width: "0%" }}
+                animate={{
+                  width: step === 2 ? "100%" : step === 1 ? "30%" : "0%",
+                }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+
+            <p className="text-sm text-gray-400">
+              {step === 2
+                ? "Готово! Фильм записан."
+                : step === 1
+                ? "Запись..."
+                : "Ожидание выбора"}
+            </p>
+
+            {step === 2 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6"
+              >
+                <Link
+                  to="/constructor"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl transition-all"
+                >
+                  Попробовать в конструкторе <ArrowRight className="w-5 h-5" />
+                </Link>
+              </motion.div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -217,7 +342,14 @@ function Advantages() {
   return (
     <section className="py-32 bg-zinc-900">
       <div className="max-w-7xl mx-auto px-6 text-center">
-        <h2 className="text-4xl md:text-5xl font-bold mb-20">Всегда с тобой</h2>
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-bold mb-20"
+        >
+          Всегда с тобой
+        </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {useCases.map((item, idx) => (
             <motion.div
@@ -291,7 +423,7 @@ export default function HomePage() {
   return (
     <div className="bg-black text-white">
       <Hero />
-      <PopularFilms />
+      <HowItWorks />
       <Advantages />
       <CTA />
     </div>
