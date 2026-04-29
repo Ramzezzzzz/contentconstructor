@@ -2,14 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Film,
-  User,
-  ShoppingCart,
-  Menu,
-  X,
-  Lock,
-  Mail,
-  LogOut,
+  Film, User, ShoppingCart, Menu, X, Lock, Mail, LogOut,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -25,11 +18,7 @@ export default function Navbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authMode, setAuthMode] = useState("login");
-  const [authForm, setAuthForm] = useState({
-    email: "",
-    password: "",
-    name: "",
-  });
+  const [authForm, setAuthForm] = useState({ email: "", password: "", name: "" });
   const [authError, setAuthError] = useState("");
   const location = useLocation();
   const { totalItems } = useCart();
@@ -131,11 +120,7 @@ export default function Navbar() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden hover:text-red-500 transition-colors"
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
@@ -167,7 +152,7 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Модалка авторизации – центрирована, без обрезания */}
+      {/* Модалка авторизации – ТЕПЕРЬ ТОЧНО ПО ЦЕНТРУ, без pt-20 */}
       <AnimatePresence>
         {isAuthOpen && !user && (
           <motion.div
@@ -227,9 +212,7 @@ export default function Navbar() {
                         <input
                           type="text"
                           value={authForm.name}
-                          onChange={(e) =>
-                            setAuthForm({ ...authForm, name: e.target.value })
-                          }
+                          onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
                           className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
                           placeholder="Иван Петров"
                           required
@@ -246,9 +229,7 @@ export default function Navbar() {
                       <input
                         type="email"
                         value={authForm.email}
-                        onChange={(e) =>
-                          setAuthForm({ ...authForm, email: e.target.value })
-                        }
+                        onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
                         className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
                         placeholder="you@example.com"
                         required
@@ -264,9 +245,7 @@ export default function Navbar() {
                       <input
                         type="password"
                         value={authForm.password}
-                        onChange={(e) =>
-                          setAuthForm({ ...authForm, password: e.target.value })
-                        }
+                        onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
                         className="w-full pl-10 pr-4 py-3 bg-black border border-white/20 rounded-xl focus:border-red-500 outline-none transition-colors text-white placeholder-gray-500"
                         placeholder="••••••••"
                         required
@@ -287,9 +266,7 @@ export default function Navbar() {
                     <div className="w-full border-t border-white/10"></div>
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-zinc-900 px-3 text-gray-500">
-                      или продолжить через
-                    </span>
+                    <span className="bg-zinc-900 px-3 text-gray-500">или продолжить через</span>
                   </div>
                 </div>
 
@@ -318,10 +295,7 @@ export default function Navbar() {
                       Нет аккаунта?{" "}
                       <button
                         type="button"
-                        onClick={() => {
-                          setAuthMode("register");
-                          setAuthError("");
-                        }}
+                        onClick={() => { setAuthMode("register"); setAuthError(""); }}
                         className="text-red-500 hover:underline font-medium"
                       >
                         Зарегистрироваться
@@ -332,10 +306,7 @@ export default function Navbar() {
                       Уже есть аккаунт?{" "}
                       <button
                         type="button"
-                        onClick={() => {
-                          setAuthMode("login");
-                          setAuthError("");
-                        }}
+                        onClick={() => { setAuthMode("login"); setAuthError(""); }}
                         className="text-red-500 hover:underline font-medium"
                       >
                         Войти
