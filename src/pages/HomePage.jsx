@@ -71,19 +71,19 @@ const useCases = [
     icon: Plane,
     title: "В самолёте",
     desc: "Смотрите любимое кино без интернета.",
-    image: `${BASE_URL}airplane.jpg`,
+    image: `${BASE_URL}images/airplane.jpg`,
   },
   {
     icon: Car,
     title: "В дороге",
     desc: "Для детей на заднем сиденье — идеально.",
-    image: `${BASE_URL}car.webp`,
+    image: `${BASE_URL}images/car.webp`,
   },
   {
     icon: Tent,
     title: "На природе",
     desc: "Вечером у костра или в палатке.",
-    image: `${BASE_URL}camping.jpg`,
+    image: `${BASE_URL}images/camping.jpg`,
   },
 ];
 
@@ -180,7 +180,7 @@ export default function HomePage() {
       <section
         className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${BASE_URL}hero_bg.webp)`,
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${BASE_URL}images/hero_bg.webp)`,
         }}
       >
         <motion.h1
