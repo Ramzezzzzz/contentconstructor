@@ -16,7 +16,6 @@ import { useAuth } from "../context/AuthContext";
 
 const navLinks = [
   { path: "/catalog", label: "Носители" },
-  { path: "/libraries", label: "Библиотеки" },
   { path: "/constructor", label: "Конструктор" },
   { path: "/delivery", label: "Доставка" },
   { path: "/about", label: "О нас" },

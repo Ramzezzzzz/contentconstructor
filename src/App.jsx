@@ -4,7 +4,6 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import CatalogPage from "./pages/CatalogPage";
-import LibrariesPage from "./pages/LibrariesPage";
 import ConstructorPage from "./pages/ConstructorPage";
 import DeliveryPage from "./pages/DeliveryPage";
 import CartPage from "./pages/CartPage";
@@ -23,7 +22,6 @@ function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<HomePage />} />
           <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/libraries" element={<LibrariesPage />} />
           <Route path="/constructor" element={<ConstructorPage />} />
           <Route path="/delivery" element={<DeliveryPage />} />
           <Route path="/cart" element={<CartPage />} />
