@@ -81,8 +81,10 @@ function HowItWorks() {
   const [films, setFilms] = useState([]);
   const [selectedFilms, setSelectedFilms] = useState([]);
   const [flying, setFlying] = useState(null);
+  const [constructorCollection, setConstructorCollection] = useState([]);
   const usbRef = useRef(null);
 
+  // Загрузка демо‑фильмов
   useEffect(() => {
     fetch(
       `https://kinopoiskapiunofficial.tech/api/v2.2/films/top?type=TOP_100_POPULAR_FILMS&page=1`,
@@ -97,7 +99,23 @@ function HowItWorks() {
       .catch(() => {});
   }, []);
 
+  // Загрузка коллекции из конструктора
+  useEffect(() => {
+    const saved = localStorage.getItem("constructorCollection");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setConstructorCollection(parsed);
+      } catch (e) {}
+    }
+  }, []);
+
+  // Общий массив для отображения
+  const displayCollection =
+    constructorCollection.length > 0 ? constructorCollection : selectedFilms;
+
   const handleFilmClick = (film, event) => {
+    // Логика для демо‑выбора (не зависит от конструктора)
     const isSelected = selectedFilms.some((f) => f.filmId === film.filmId);
     if (isSelected) {
       setSelectedFilms((prev) => prev.filter((f) => f.filmId !== film.filmId));
@@ -143,7 +161,7 @@ function HowItWorks() {
         </motion.p>
 
         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
-          {/* Сетка фильмов */}
+          {/* Сетка фильмов (демо‑каталог) */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-w-2xl">
             {films.map((film) => (
               <motion.div
@@ -182,12 +200,12 @@ function HowItWorks() {
               ref={usbRef}
               className="relative w-36 h-48 bg-zinc-800/50 border border-white/10 rounded-2xl flex flex-col justify-end items-center shadow-xl overflow-hidden p-2"
             >
-              {/* Мини-постеры внутри флешки (снизу вверх) */}
+              {/* Мини‑постеры */}
               <div className="w-full flex flex-wrap justify-center items-end gap-1 mb-2">
                 <AnimatePresence>
-                  {selectedFilms.map((film) => (
+                  {displayCollection.map((film) => (
                     <motion.div
-                      key={film.filmId}
+                      key={film.kinopoisk_id || film.filmId}
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
@@ -195,10 +213,11 @@ function HowItWorks() {
                     >
                       <img
                         src={
+                          film.poster_url ||
                           film.posterUrl ||
                           "https://via.placeholder.com/24x36?text=?"
                         }
-                        alt={film.nameRu}
+                        alt={film.title || film.nameRu}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.src =
@@ -209,23 +228,21 @@ function HowItWorks() {
                   ))}
                 </AnimatePresence>
               </div>
-              {/* Иконка USB */}
               <Usb className="w-8 h-8 text-red-400 absolute top-2 right-2 opacity-50" />
-              {/* Счетчик */}
               <div className="text-xs text-gray-400">
-                {selectedFilms.length} / 10
+                {displayCollection.length} / 10
               </div>
             </div>
             <div className="w-32 h-2 bg-zinc-700 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-red-500 to-orange-400"
                 initial={{ width: 0 }}
-                animate={{ width: `${(selectedFilms.length / 10) * 100}%` }}
+                animate={{ width: `${(displayCollection.length / 10) * 100}%` }}
                 transition={{ duration: 0.5 }}
               />
             </div>
 
-            {/* Текст с фиксированной шириной */}
+            {/* Текст и кнопки (оставлены без изменений) */}
             <div
               className="flex justify-center mt-2"
               style={{ minWidth: "240px" }}
@@ -239,7 +256,6 @@ function HowItWorks() {
           </div>
         </div>
 
-        {/* Кнопки без горизонтального скачка */}
         <div className="flex justify-center mt-12">
           <div
             className="relative inline-flex items-center justify-center"

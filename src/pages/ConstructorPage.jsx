@@ -29,7 +29,7 @@ import { Link } from "react-router-dom";
 const API_KEY = "7fd95d4b-d51b-4959-9e36-408eb4dcba93";
 const API_BASE = "/movie/api";
 
-// Типы носителей с разными размерами контейнера
+// Типы носителей с minHeight для растущего контейнера
 const deviceTypes = {
   usb: {
     icon: Usb,
@@ -37,7 +37,7 @@ const deviceTypes = {
     maxCapacity: 256,
     color: "from-red-500 to-orange-400",
     basePrice: 2500,
-    containerSize: "w-36 h-48",
+    minHeight: "180px",
   },
   ssd: {
     icon: Database,
@@ -45,7 +45,7 @@ const deviceTypes = {
     maxCapacity: 2048,
     color: "from-blue-500 to-cyan-400",
     basePrice: 8900,
-    containerSize: "w-44 h-52",
+    minHeight: "220px",
   },
   hdd: {
     icon: HardDrive,
@@ -53,7 +53,7 @@ const deviceTypes = {
     maxCapacity: 8192,
     color: "from-yellow-500 to-amber-400",
     basePrice: 12500,
-    containerSize: "w-52 h-60",
+    minHeight: "260px",
   },
 };
 
@@ -116,7 +116,7 @@ async function fetchMovies(endpoint, params, apiVersion = "v2.2") {
   }
 }
 
-// Визуальная панель носителя с мини-постерами
+// Визуальная панель носителя с растущим контейнером
 function StoragePanel({
   collection,
   type,
@@ -125,9 +125,11 @@ function StoragePanel({
   storageRef,
 }) {
   const device = deviceTypes[type];
-  const totalSize = collection.length * 2.5; // ~2.5 ГБ на фильм
+  const totalSize = collection.length * 2.5;
   const fillPercent = Math.min(100, (totalSize / device.maxCapacity) * 100);
   const approxPrice = device.basePrice;
+  const maxVisible = 16;
+  const hiddenCount = collection.length - maxVisible;
 
   return (
     <div className="bg-zinc-800/30 border border-white/10 rounded-2xl p-4 md:p-6 space-y-4">
@@ -146,10 +148,10 @@ function StoragePanel({
         </select>
       </div>
 
-      {/* Визуальный контейнер с мини-постерами – разный размер для разных типов */}
       <div
         ref={storageRef}
-        className={`relative bg-black/50 border border-white/10 rounded-2xl p-3 mx-auto transition-all duration-300 ${device.containerSize}`}
+        className="relative bg-black/50 border border-white/10 rounded-2xl p-3 mx-auto transition-all duration-300"
+        style={{ minHeight: device.minHeight }}
       >
         <div className="flex justify-between items-center mb-2">
           <device.icon className="w-6 h-6 text-white/70" />
@@ -160,7 +162,7 @@ function StoragePanel({
 
         <div className="flex flex-wrap justify-start items-end gap-1 min-h-[40px]">
           <AnimatePresence>
-            {collection.map((movie) => (
+            {collection.slice(0, maxVisible).map((movie) => (
               <motion.div
                 key={movie.kinopoisk_id}
                 initial={{ opacity: 0, scale: 0.5 }}
@@ -191,6 +193,11 @@ function StoragePanel({
               </motion.div>
             ))}
           </AnimatePresence>
+          {hiddenCount > 0 && (
+            <div className="w-6 h-9 rounded-sm bg-zinc-700/50 flex items-center justify-center text-xs text-gray-400 border border-white/10">
+              +{hiddenCount}
+            </div>
+          )}
           {collection.length === 0 && (
             <div className="text-gray-500 text-xs w-full text-center py-2">
               Добавьте фильм
@@ -221,8 +228,8 @@ function StoragePanel({
   );
 }
 
-// Модальное окно (увеличенный размер)
-function MovieModal({ movie, onClose, isInCollection, onAdd }) {
+// Модальное окно с полноразмерным постером и кнопкой Убрать/Добавить
+function MovieModal({ movie, onClose, isInCollection, onAdd, onRemove }) {
   if (!movie) return null;
   return (
     <motion.div
@@ -240,11 +247,11 @@ function MovieModal({ movie, onClose, isInCollection, onAdd }) {
         onClick={(e) => e.stopPropagation()}
         className="w-full md:max-w-2xl bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden max-h-[90vh] flex flex-col"
       >
-        <div className="relative h-64 sm:h-96 overflow-hidden">
+        <div className="relative flex-shrink-0">
           <img
             src={movie.posterUrl || ""}
             alt={movie.nameRu}
-            className="w-full h-full object-cover"
+            className="w-full max-h-[50vh] object-contain bg-black"
           />
           <button
             onClick={onClose}
@@ -272,17 +279,20 @@ function MovieModal({ movie, onClose, isInCollection, onAdd }) {
           </div>
           <button
             onClick={() => {
-              onAdd();
+              if (isInCollection) {
+                onRemove();
+              } else {
+                onAdd();
+              }
               onClose();
             }}
-            disabled={isInCollection}
             className={`w-full py-3 rounded-xl font-semibold transition-colors ${
               isInCollection
-                ? "bg-green-600 cursor-not-allowed"
+                ? "bg-green-600 hover:bg-green-700"
                 : "bg-red-600 hover:bg-red-700"
             }`}
           >
-            {isInCollection ? "В коллекции" : "Добавить в коллекцию"}
+            {isInCollection ? "Убрать из коллекции" : "Добавить в коллекцию"}
           </button>
         </div>
       </motion.div>
@@ -302,12 +312,11 @@ export default function ConstructorPage() {
   const [activeMode, setActiveMode] = useState("top250");
   const [activeGenre, setActiveGenre] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
-
   const [flying, setFlying] = useState(null);
-  const storageVisualRef = useRef(null); // реф именно на контейнер с иконкой и постерами
-
+  const storageVisualRef = useRef(null);
   const searchInputRef = useRef(null);
 
+  // Загрузка коллекции с сервера
   useEffect(() => {
     if (!user || !token) {
       setInitialLoad(false);
@@ -328,6 +337,7 @@ export default function ConstructorPage() {
     })();
   }, [user, token]);
 
+  // Перенос демо-коллекции с главной
   useEffect(() => {
     if (!user || !token) return;
     const demoIds = localStorage.getItem("demoCollection");
@@ -348,6 +358,11 @@ export default function ConstructorPage() {
     });
     localStorage.removeItem("demoCollection");
   }, [user, token]);
+
+  // Синхронизация коллекции с localStorage (для главной страницы)
+  useEffect(() => {
+    localStorage.setItem("constructorCollection", JSON.stringify(collection));
+  }, [collection]);
 
   const loadMovies = useCallback(async () => {
     setLoading(true);
@@ -445,12 +460,12 @@ export default function ConstructorPage() {
     }
   };
 
-  // Клик по постеру = открываем модалку
+  // Клик по постеру → открыть модалку
   const handlePosterClick = (movie) => {
     setSelectedMovie(movie);
   };
 
-  // Клик по кнопке "+" на карточке – добавляем с анимацией
+  // Клик по кнопке «Добавить»/«Убрать» с анимацией
   const handleAddClick = (movie, event) => {
     event.stopPropagation();
     if (
@@ -461,7 +476,6 @@ export default function ConstructorPage() {
       removeFromCollection(movie.filmId || movie.kinopoiskId);
       return;
     }
-    // Запускаем анимацию полёта
     const visualRect = storageVisualRef.current?.getBoundingClientRect();
     if (visualRect) {
       setFlying({
@@ -474,14 +488,6 @@ export default function ConstructorPage() {
       setTimeout(() => setFlying(null), 700);
     }
     addToCollection(movie);
-  };
-
-  // Добавление из модалки
-  const handleAddFromModal = () => {
-    if (!selectedMovie) return;
-    // Для модалки анимацию не делаем (или можно сделать, но без координат)
-    addToCollection(selectedMovie);
-    setSelectedMovie(null);
   };
 
   const handleCollectionClick = (key) => {
@@ -534,6 +540,7 @@ export default function ConstructorPage() {
             </p>
           </motion.div>
 
+          {/* Подборки, поиск, жанры */}
           <div className="flex flex-wrap justify-center gap-3 mb-6">
             {collectionsQuick.map((col) => (
               <button
@@ -645,14 +652,23 @@ export default function ConstructorPage() {
                               </div>
                               <button
                                 onClick={(e) => handleAddClick(movie, e)}
-                                disabled={collection.some(
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                                  collection.some(
+                                    (m) =>
+                                      m.kinopoisk_id ==
+                                      (movie.filmId || movie.kinopoiskId)
+                                  )
+                                    ? "bg-green-600 hover:bg-green-700 text-white"
+                                    : "bg-red-600/80 hover:bg-red-600 text-white"
+                                }`}
+                              >
+                                {collection.some(
                                   (m) =>
                                     m.kinopoisk_id ==
                                     (movie.filmId || movie.kinopoiskId)
-                                )}
-                                className="p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                              >
-                                <Plus className="w-4 h-4" />
+                                )
+                                  ? "Убрать"
+                                  : "Добавить"}
                               </button>
                             </div>
                           </div>
@@ -727,7 +743,20 @@ export default function ConstructorPage() {
                 m.kinopoisk_id ==
                 (selectedMovie.filmId || selectedMovie.kinopoiskId)
             )}
-            onAdd={handleAddFromModal}
+            onAdd={() => {
+              const movie = selectedMovie;
+              if (
+                !collection.some(
+                  (m) => m.kinopoisk_id == (movie.filmId || movie.kinopoiskId)
+                )
+              ) {
+                addToCollection(movie);
+              }
+            }}
+            onRemove={() => {
+              const movie = selectedMovie;
+              removeFromCollection(movie.filmId || movie.kinopoiskId);
+            }}
           />
         )}
       </AnimatePresence>
