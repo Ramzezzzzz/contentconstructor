@@ -76,7 +76,7 @@ function Hero() {
   );
 }
 
-/* ---------- Экран 2: Демо-конструктор (без скачков, с анимацией) ---------- */
+/* ---------- Экран 2: Демо-конструктор (без скачков, с анимацией, с мини-постерами) ---------- */
 function HowItWorks() {
   const [films, setFilms] = useState([]);
   const [selectedFilms, setSelectedFilms] = useState([]);
@@ -180,10 +180,39 @@ function HowItWorks() {
           <div className="flex flex-col items-center gap-4 relative">
             <div
               ref={usbRef}
-              className="relative w-32 h-40 bg-zinc-800/50 border border-white/10 rounded-2xl flex items-center justify-center shadow-xl overflow-hidden"
+              className="relative w-36 h-48 bg-zinc-800/50 border border-white/10 rounded-2xl flex flex-col justify-end items-center shadow-xl overflow-hidden p-2"
             >
-              <Usb className="w-12 h-12 text-red-400" />
-              <div className="absolute -bottom-1 left-0 right-0 text-center text-xs text-gray-500">
+              {/* Мини-постеры внутри флешки (снизу вверх) */}
+              <div className="w-full flex flex-wrap justify-center items-end gap-1 mb-2">
+                <AnimatePresence>
+                  {selectedFilms.map((film) => (
+                    <motion.div
+                      key={film.filmId}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      className="w-6 h-9 rounded-sm overflow-hidden border border-white/20 shadow-sm"
+                    >
+                      <img
+                        src={
+                          film.posterUrl ||
+                          "https://via.placeholder.com/24x36?text=?"
+                        }
+                        alt={film.nameRu}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/24x36?text=?";
+                        }}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+              {/* Иконка USB */}
+              <Usb className="w-8 h-8 text-red-400 absolute top-2 right-2 opacity-50" />
+              {/* Счетчик */}
+              <div className="text-xs text-gray-400">
                 {selectedFilms.length} / 10
               </div>
             </div>
@@ -195,9 +224,11 @@ function HowItWorks() {
                 transition={{ duration: 0.5 }}
               />
             </div>
+
+            {/* Текст с фиксированной шириной */}
             <div
               className="flex justify-center mt-2"
-              style={{ minWidth: "220px" }}
+              style={{ minWidth: "240px" }}
             >
               <p className="text-sm text-gray-400">
                 {selectedFilms.length === 0
