@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthContext";
 
 const BASE_URL = import.meta.env.BASE_URL;
 const API_KEY = "7fd95d4b-d51b-4959-9e36-408eb4dcba93";
+const API_BASE = "/movie/api";
 
 const useCases = [
   {
@@ -33,7 +34,7 @@ const useCases = [
   },
 ];
 
-/* ---------- Экран 1: Герой ---------- */
+// Экран 1: Герой
 function Hero() {
   const { user } = useAuth();
   const { scrollYProgress } = useScroll();
@@ -76,15 +77,15 @@ function Hero() {
   );
 }
 
-/* ---------- Экран 2: Демо-конструктор (без скачков, с анимацией, с мини-постерами) ---------- */
+// Экран 2: Демо-конструктор (сквозная синхронизация)
 function HowItWorks() {
-  const [films, setFilms] = useState([]);
-  const [selectedFilms, setSelectedFilms] = useState([]);
+  const { user, token } = useAuth();
+  const [films, setFilms] = useState([]); // 10 демо-фильмов
+  const [collection, setCollection] = useState([]); // общая коллекция
   const [flying, setFlying] = useState(null);
-  const [constructorCollection, setConstructorCollection] = useState([]);
   const usbRef = useRef(null);
 
-  // Загрузка демо‑фильмов
+  // Загрузка демо-каталога
   useEffect(() => {
     fetch(
       `https://kinopoiskapiunofficial.tech/api/v2.2/films/top?type=TOP_100_POPULAR_FILMS&page=1`,
@@ -99,45 +100,102 @@ function HowItWorks() {
       .catch(() => {});
   }, []);
 
-  // Загрузка коллекции из конструктора
+  // Загрузка коллекции из localStorage (при монтировании)
   useEffect(() => {
     const saved = localStorage.getItem("constructorCollection");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setConstructorCollection(parsed);
+        if (Array.isArray(parsed)) setCollection(parsed);
       } catch (e) {}
     }
   }, []);
 
-  // Общий массив для отображения
-  const displayCollection =
-    constructorCollection.length > 0 ? constructorCollection : selectedFilms;
+  // Синхронизация коллекции в localStorage при каждом изменении
+  useEffect(() => {
+    localStorage.setItem("constructorCollection", JSON.stringify(collection));
+  }, [collection]);
 
-  const handleFilmClick = (film, event) => {
-    // Логика для демо‑выбора (не зависит от конструктора)
-    const isSelected = selectedFilms.some((f) => f.filmId === film.filmId);
-    if (isSelected) {
-      setSelectedFilms((prev) => prev.filter((f) => f.filmId !== film.filmId));
+  // Обработчик клика по демо-постеру (добавляет/удаляет через API)
+  const handleDemoClick = async (film, event) => {
+    if (!user || !token) {
+      alert("Войдите, чтобы сохранять фильмы");
       return;
     }
-    setSelectedFilms((prev) => [...prev, film]);
-    const usbRect = usbRef.current?.getBoundingClientRect();
-    const endX = usbRect
-      ? usbRect.left + usbRect.width / 2
-      : window.innerWidth / 2;
-    const endY = usbRect
-      ? usbRect.top + usbRect.height / 2
-      : window.innerHeight / 2;
-    setFlying({
-      film,
-      startX: event.clientX,
-      startY: event.clientY,
-      endX,
-      endY,
-    });
-    setTimeout(() => setFlying(null), 700);
+
+    const movieId = film.filmId;
+    const isInCollection = collection.some((m) => m.kinopoisk_id == movieId);
+
+    if (isInCollection) {
+      // Удаляем из коллекции
+      try {
+        const res = await fetch(`${API_BASE}/collection.php`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ kinopoisk_id: movieId }),
+        });
+        if (res.ok) {
+          setCollection((prev) =>
+            prev.filter((m) => m.kinopoisk_id != movieId)
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      // Добавляем с анимацией полёта
+      const usbRect = usbRef.current?.getBoundingClientRect();
+      const endX = usbRect
+        ? usbRect.left + usbRect.width / 2
+        : window.innerWidth / 2;
+      const endY = usbRect
+        ? usbRect.top + usbRect.height / 2
+        : window.innerHeight / 2;
+
+      setFlying({
+        film,
+        startX: event.clientX,
+        startY: event.clientY,
+        endX,
+        endY,
+      });
+      setTimeout(() => setFlying(null), 700);
+
+      try {
+        const res = await fetch(`${API_BASE}/collection.php`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            kinopoisk_id: movieId,
+            title: film.nameRu || film.nameEn || "Без названия",
+            poster_url: film.posterUrl || "",
+            rating: film.rating || 0,
+          }),
+        });
+        if (res.ok) {
+          setCollection((prev) => [
+            ...prev,
+            {
+              kinopoisk_id: movieId,
+              title: film.nameRu || film.nameEn,
+              poster_url: film.posterUrl,
+              rating: film.rating,
+            },
+          ]);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
+
+  const displayCount = collection.length;
 
   return (
     <section className="py-20 sm:py-32 bg-gradient-to-b from-black to-zinc-900">
@@ -161,15 +219,15 @@ function HowItWorks() {
         </motion.p>
 
         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
-          {/* Сетка фильмов (демо‑каталог) */}
+          {/* Демо-каталог */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-w-2xl">
             {films.map((film) => (
               <motion.div
                 key={film.filmId}
                 whileHover={{ scale: 1.05 }}
-                onClick={(e) => handleFilmClick(film, e)}
+                onClick={(e) => handleDemoClick(film, e)}
                 className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
-                  selectedFilms.some((f) => f.filmId === film.filmId)
+                  collection.some((m) => m.kinopoisk_id == film.filmId)
                     ? "border-red-500 shadow-lg shadow-red-500/20"
                     : "border-transparent hover:border-white/30"
                 }`}
@@ -182,7 +240,7 @@ function HowItWorks() {
                   alt={film.nameRu}
                   className="w-full h-36 sm:h-44 object-cover"
                 />
-                {selectedFilms.some((f) => f.filmId === film.filmId) && (
+                {collection.some((m) => m.kinopoisk_id == film.filmId) && (
                   <div className="absolute top-2 right-2 bg-red-600 rounded-full p-1">
                     <X className="w-3 h-3" />
                   </div>
@@ -194,30 +252,28 @@ function HowItWorks() {
             ))}
           </div>
 
-          {/* Флешка и прогресс */}
+          {/* Визуальная флешка */}
           <div className="flex flex-col items-center gap-4 relative">
             <div
               ref={usbRef}
               className="relative w-36 h-48 bg-zinc-800/50 border border-white/10 rounded-2xl flex flex-col justify-end items-center shadow-xl overflow-hidden p-2"
             >
-              {/* Мини‑постеры */}
               <div className="w-full flex flex-wrap justify-center items-end gap-1 mb-2">
                 <AnimatePresence>
-                  {displayCollection.map((film) => (
+                  {collection.slice(0, 16).map((movie) => (
                     <motion.div
-                      key={film.kinopoisk_id || film.filmId}
+                      key={movie.kinopoisk_id}
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
-                      className="w-6 h-9 rounded-sm overflow-hidden border border-white/20 shadow-sm"
+                      className="w-6 h-9 rounded-sm overflow-hidden border border-white/20 relative group"
                     >
                       <img
                         src={
-                          film.poster_url ||
-                          film.posterUrl ||
+                          movie.poster_url ||
                           "https://via.placeholder.com/24x36?text=?"
                         }
-                        alt={film.title || film.nameRu}
+                        alt={movie.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.src =
@@ -229,61 +285,38 @@ function HowItWorks() {
                 </AnimatePresence>
               </div>
               <Usb className="w-8 h-8 text-red-400 absolute top-2 right-2 opacity-50" />
-              <div className="text-xs text-gray-400">
-                {displayCollection.length} / 10
-              </div>
+              <div className="text-xs text-gray-400">{displayCount} / 10</div>
             </div>
             <div className="w-32 h-2 bg-zinc-700 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-red-500 to-orange-400"
                 initial={{ width: 0 }}
-                animate={{ width: `${(displayCollection.length / 10) * 100}%` }}
+                animate={{
+                  width: `${Math.min(100, (displayCount / 10) * 100)}%`,
+                }}
                 transition={{ duration: 0.5 }}
               />
             </div>
-
-            {/* Текст и кнопки (оставлены без изменений) */}
             <div
               className="flex justify-center mt-2"
               style={{ minWidth: "240px" }}
             >
               <p className="text-sm text-gray-400">
-                {selectedFilms.length === 0
+                {displayCount === 0
                   ? "Кликните на фильм, чтобы добавить"
-                  : `Выбрано: ${selectedFilms.length}`}
+                  : `Выбрано: ${displayCount}`}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-center mt-12">
-          <div
-            className="relative inline-flex items-center justify-center"
-            style={{ minWidth: "340px", minHeight: "64px" }}
+        <div className="flex justify-center mt-12 h-16">
+          <Link
+            to="/constructor"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
           >
-            {selectedFilms.length > 0 ? (
-              <Link
-                to="/constructor"
-                onClick={() => {
-                  const ids = selectedFilms.map((f) => f.filmId);
-                  localStorage.setItem("demoCollection", JSON.stringify(ids));
-                }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
-              >
-                Попробовать в конструкторе ({selectedFilms.length})
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold transition-colors">
-                <Link
-                  to="/constructor"
-                  className="inline-flex items-center gap-1"
-                >
-                  Открыть конструктор <ArrowRight className="w-4 h-4" />
-                </Link>
-              </span>
-            )}
-          </div>
+            Открыть конструктор <ArrowRight className="w-5 h-5" />
+          </Link>
         </div>
       </div>
 
@@ -322,7 +355,7 @@ function HowItWorks() {
   );
 }
 
-/* ---------- Экран 3: Преимущества ---------- */
+// Экран 3: Преимущества
 function Advantages() {
   return (
     <section className="py-20 sm:py-32 bg-zinc-900">
@@ -358,7 +391,7 @@ function Advantages() {
   );
 }
 
-/* ---------- Экран 4: CTA ---------- */
+// Экран 4: CTA
 function CTA() {
   return (
     <section className="py-20 sm:py-32 bg-gradient-to-b from-black to-zinc-900 text-center">
