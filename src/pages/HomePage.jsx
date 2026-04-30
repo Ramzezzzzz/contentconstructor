@@ -207,32 +207,35 @@ function HowItWorks() {
           </div>
         </div>
 
-        {/* Кнопка без скачков */}
-        <div className="flex justify-center mt-12 h-16">
-          {selectedFilms.length > 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Link
-                to="/constructor"
-                onClick={() => {
-                  const ids = selectedFilms.map((f) => f.filmId);
-                  localStorage.setItem("demoCollection", JSON.stringify(ids));
-                }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
-              >
-                Попробовать в конструкторе ({selectedFilms.length})
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </motion.div>
-          ) : (
-            <Link
-              to="/constructor"
-              className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold transition-colors"
-            >
-              Открыть конструктор <ArrowRight className="w-4 h-4" />
-            </Link>
-          )}
-        </div>
-      </div>
+ {/* Кнопки без скачков — всегда занимают одну и ту же высоту */}
+<div className="flex justify-center mt-12" style={{ minHeight: '64px' }}>
+  {selectedFilms.length > 0 ? (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Link
+        to="/constructor"
+        onClick={() => {
+          const ids = selectedFilms.map(f => f.filmId);
+          localStorage.setItem('demoCollection', JSON.stringify(ids));
+        }}
+        className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
+      >
+        Попробовать в конструкторе ({selectedFilms.length})
+        <ArrowRight className="w-5 h-5" />
+      </Link>
+    </motion.div>
+  ) : (
+    <Link
+      to="/constructor"
+      className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold transition-colors"
+    >
+      Открыть конструктор <ArrowRight className="w-4 h-4" />
+    </Link>
+  )}
+</div>
 
       {/* Анимация полёта (исправлено: left/top вместо x/y) */}
       <AnimatePresence>
