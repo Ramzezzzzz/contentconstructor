@@ -101,12 +101,10 @@ function HowItWorks() {
     const isSelected = selectedFilms.some((f) => f.filmId === film.filmId);
 
     if (isSelected) {
-      // Отмена выбора
       setSelectedFilms((prev) => prev.filter((f) => f.filmId !== film.filmId));
     } else {
       setSelectedFilms((prev) => [...prev, film]);
 
-      // Получаем координаты флешки
       const usbRect = usbRef.current?.getBoundingClientRect();
       const endX = usbRect
         ? usbRect.left + usbRect.width / 2
@@ -123,7 +121,6 @@ function HowItWorks() {
         endY,
       });
 
-      // Убираем анимацию через 700 мс
       setTimeout(() => setFlying(null), 700);
     }
   };
@@ -202,7 +199,6 @@ function HowItWorks() {
                 transition={{ duration: 0.5 }}
               />
             </div>
-
             <p className="text-sm text-gray-400 mt-2">
               {selectedFilms.length === 0
                 ? "Кликните на фильм, чтобы добавить"
@@ -211,7 +207,7 @@ function HowItWorks() {
           </div>
         </div>
 
-        {/* Кнопки (без скачков) */}
+        {/* Кнопка без скачков */}
         <div className="flex justify-center mt-12 h-16">
           {selectedFilms.length > 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -236,39 +232,39 @@ function HowItWorks() {
             </Link>
           )}
         </div>
-
-        {/* Анимация полёта (абсолютно позиционирована) */}
-        <AnimatePresence>
-          {flying && (
-            <motion.div
-              key={flying.film.filmId}
-              initial={{
-                opacity: 1,
-                x: flying.startX - window.innerWidth / 2,
-                y: flying.startY - window.innerHeight / 2,
-                scale: 1,
-                position: "fixed",
-                zIndex: 200,
-              }}
-              animate={{
-                opacity: 0,
-                x: flying.endX - window.innerWidth / 2,
-                y: flying.endY - window.innerHeight / 2,
-                scale: 0.3,
-              }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-              className="fixed z-[200] pointer-events-none"
-            >
-              <img
-                src={flying.film.posterUrl}
-                alt={flying.film.nameRu}
-                className="w-12 h-16 object-cover rounded-lg shadow-xl"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Анимация полёта (исправлено: left/top вместо x/y) */}
+      <AnimatePresence>
+        {flying && (
+          <motion.div
+            key={flying.film.filmId}
+            initial={{
+              position: "fixed",
+              left: flying.startX,
+              top: flying.startY,
+              opacity: 1,
+              scale: 1,
+              zIndex: 200,
+              pointerEvents: "none",
+            }}
+            animate={{
+              left: flying.endX,
+              top: flying.endY,
+              opacity: 0,
+              scale: 0.3,
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+          >
+            <img
+              src={flying.film.posterUrl}
+              alt={flying.film.nameRu}
+              className="w-12 h-16 object-cover rounded-lg shadow-xl"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
