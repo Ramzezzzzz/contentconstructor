@@ -174,7 +174,7 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed left-0 right-0 h-screen z-[110] grid place-items-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setIsAuthOpen(false)}
           >
             <motion.div
