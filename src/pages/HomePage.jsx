@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   motion,
   useScroll,
@@ -6,16 +6,7 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  Star,
-  Plane,
-  Car,
-  Tent,
-  ArrowRight,
-  Film,
-  Usb,
-  User,
-} from "lucide-react";
+import { Star, Plane, Car, Tent, ArrowRight, Usb, User, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const BASE_URL = import.meta.env.BASE_URL;
@@ -42,7 +33,7 @@ const useCases = [
   },
 ];
 
-/* ---------- Экран 1: Герой (без кнопок, только текст) ---------- */
+/* ---------- Экран 1: Герой (без кнопок) ---------- */
 function Hero() {
   const { user } = useAuth();
   const { scrollYProgress } = useScroll();
@@ -85,13 +76,14 @@ function Hero() {
   );
 }
 
-/* ---------- Экран 2: Как это работает (демо с анимацией полёта) ---------- */
+/* ---------- Экран 2: Демо-конструктор с анимацией, отменой и интеграцией ---------- */
 function HowItWorks() {
   const [films, setFilms] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [flyingFilm, setFlyingFilm] = useState(null); // один фильм, который сейчас летит
+  const [selectedFilms, setSelectedFilms] = useState([]); // массив выбранных объектов
+  const [flying, setFlying] = useState(null); // { film, startX, startY }
+  const usbRef = useRef(null); // реф на контейнер флешки для получения координат
 
-  // Загрузка реальных популярных фильмов из API
+  // Загрузка реальных фильмов из API
   useEffect(() => {
     fetch(
       `https://kinopoiskapiunofficial.tech/api/v2.2/films/top?type=TOP_100_POPULAR_FILMS&page=1`,
@@ -103,21 +95,43 @@ function HowItWorks() {
       .then((data) => {
         if (data.films) setFilms(data.films.slice(0, 10));
       })
-      .catch(() => {
-        // fallback — пустой массив, можно ничего не показывать
-      });
+      .catch(() => {});
   }, []);
 
-  const handleSelect = (film) => {
-    const id = film.filmId;
-    if (selectedIds.includes(id)) return; // уже выбран
-    setSelectedIds((prev) => [...prev, id]);
-    // Запускаем анимацию полёта
-    setFlyingFilm(film);
-    setTimeout(() => setFlyingFilm(null), 800);
-  };
+  // Обработчик клика по фильму
+  const handleFilmClick = (film, event) => {
+    const isAlreadySelected = selectedFilms.some(
+      (f) => f.filmId === film.filmId
+    );
 
-  const selectedFilms = films.filter((f) => selectedIds.includes(f.filmId));
+    if (isAlreadySelected) {
+      // Отмена выбора: удаляем из списка
+      setSelectedFilms((prev) => prev.filter((f) => f.filmId !== film.filmId));
+    } else {
+      // Добавляем фильм и запускаем анимацию полёта
+      setSelectedFilms((prev) => [...prev, film]);
+
+      // Получаем координаты флешки
+      const usbRect = usbRef.current?.getBoundingClientRect();
+      const endX = usbRect
+        ? usbRect.left + usbRect.width / 2
+        : window.innerWidth / 2;
+      const endY = usbRect
+        ? usbRect.top + usbRect.height / 2
+        : window.innerHeight / 2;
+
+      setFlying({
+        film,
+        startX: event.clientX,
+        startY: event.clientY,
+        endX,
+        endY,
+      });
+
+      // Убираем анимацию через 700 мс
+      setTimeout(() => setFlying(null), 700);
+    }
+  };
 
   return (
     <section className="py-20 sm:py-32 bg-gradient-to-b from-black to-zinc-900">
@@ -136,21 +150,22 @@ function HowItWorks() {
           viewport={{ once: true }}
           className="text-lg sm:text-xl text-gray-400 mb-12 max-w-2xl mx-auto"
         >
-          Просто кликните на постер — фильм отправится на флешку.
+          Нажимайте на постеры — фильмы отправятся на флешку. Повторное нажатие
+          уберёт фильм.
         </motion.p>
 
         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
-          {/* Сетка фильмов (реальные постеры) */}
+          {/* Сетка фильмов */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-w-2xl">
             {films.map((film) => (
               <motion.div
                 key={film.filmId}
                 whileHover={{ scale: 1.05 }}
-                onClick={() => handleSelect(film)}
+                onClick={(e) => handleFilmClick(film, e)}
                 className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
-                  selectedIds.includes(film.filmId)
-                    ? "border-red-500 opacity-80"
-                    : "border-transparent"
+                  selectedFilms.some((f) => f.filmId === film.filmId)
+                    ? "border-red-500 shadow-lg shadow-red-500/20"
+                    : "border-transparent hover:border-white/30"
                 }`}
               >
                 <img
@@ -161,42 +176,27 @@ function HowItWorks() {
                   alt={film.nameRu}
                   className="w-full h-36 sm:h-44 object-cover"
                 />
-                {selectedIds.includes(film.filmId) && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">
-                      Выбрано
-                    </span>
+                {selectedFilms.some((f) => f.filmId === film.filmId) && (
+                  <div className="absolute top-2 right-2 bg-red-600 rounded-full p-1">
+                    <X className="w-3 h-3" />
                   </div>
                 )}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                  <p className="text-xs font-bold truncate">{film.nameRu}</p>
+                </div>
               </motion.div>
             ))}
           </div>
 
-          {/* Визуальная флешка */}
+          {/* Флешка и прогресс */}
           <div className="flex flex-col items-center gap-4 relative">
-            <div className="relative w-32 h-40 bg-zinc-800/50 border border-white/10 rounded-2xl flex items-center justify-center shadow-xl overflow-hidden">
+            <div
+              ref={usbRef}
+              className="relative w-32 h-40 bg-zinc-800/50 border border-white/10 rounded-2xl flex items-center justify-center shadow-xl overflow-hidden"
+            >
               <Usb className="w-12 h-12 text-red-400" />
-              {/* Анимация летящего постера */}
-              <AnimatePresence>
-                {flyingFilm && (
-                  <motion.div
-                    key={flyingFilm.filmId}
-                    initial={{ opacity: 1, x: -100, y: -50, scale: 0.7 }}
-                    animate={{ opacity: 0, x: 0, y: 0, scale: 0.2 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.6, ease: "easeInOut" }}
-                    className="absolute z-20"
-                  >
-                    <img
-                      src={flyingFilm.posterUrl}
-                      alt=""
-                      className="w-12 h-16 object-cover rounded-lg"
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
               <div className="absolute -bottom-1 left-0 right-0 text-center text-xs text-gray-500">
-                {selectedFilms.length} из 10
+                {selectedFilms.length} / 10
               </div>
             </div>
             <div className="w-32 h-2 bg-zinc-700 rounded-full overflow-hidden">
@@ -207,22 +207,82 @@ function HowItWorks() {
                 transition={{ duration: 0.5 }}
               />
             </div>
+
+            {/* Анимация полёта */}
+            <AnimatePresence>
+              {flying && (
+                <motion.div
+                  key={flying.film.filmId}
+                  initial={{
+                    opacity: 1,
+                    x: flying.startX - window.innerWidth / 2,
+                    y: flying.startY - window.innerHeight / 2,
+                    scale: 1,
+                  }}
+                  animate={{
+                    opacity: 0,
+                    x: flying.endX - window.innerWidth / 2,
+                    y: flying.endY - window.innerHeight / 2,
+                    scale: 0.3,
+                  }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  className="fixed z-[200] pointer-events-none"
+                >
+                  <img
+                    src={flying.film.posterUrl}
+                    alt={flying.film.nameRu}
+                    className="w-12 h-16 object-cover rounded-lg shadow-xl"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <p className="text-sm text-gray-400 mt-2">
+              {selectedFilms.length === 0
+                ? "Кликните на фильм, чтобы добавить"
+                : `Выбрано: ${selectedFilms.length}`}
+            </p>
           </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-12"
-        >
-          <Link
-            to="/constructor"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
+        {/* Кнопка перехода в конструктор с передачей выбранных фильмов */}
+        {selectedFilms.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-12"
           >
-            Попробовать в конструкторе <ArrowRight className="w-5 h-5" />
-          </Link>
-        </motion.div>
+            <Link
+              to="/constructor"
+              onClick={() => {
+                // Сохраняем выбранные filmId в localStorage
+                const ids = selectedFilms.map((f) => f.filmId);
+                localStorage.setItem("demoCollection", JSON.stringify(ids));
+              }}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
+            >
+              Попробовать в конструкторе ({selectedFilms.length})
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </motion.div>
+        )}
+
+        {selectedFilms.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mt-12"
+          >
+            <Link
+              to="/constructor"
+              className="text-red-400 hover:text-red-300 font-semibold transition-colors inline-flex items-center gap-1"
+            >
+              Открыть конструктор <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        )}
       </div>
     </section>
   );

@@ -288,6 +288,36 @@ export default function ConstructorPage() {
     })();
   }, [user, token]);
 
+  // 🔥 Новый эффект — перенос демо‑коллекции
+  useEffect(() => {
+    if (!user || !token) return; // без авторизации не добавляем
+    const demoIds = localStorage.getItem("demoCollection");
+    if (!demoIds) return;
+    const ids = JSON.parse(demoIds);
+    if (!Array.isArray(ids) || ids.length === 0) return;
+
+    ids.forEach(async (filmId) => {
+      try {
+        const res = await fetch(
+          `https://kinopoiskapiunofficial.tech/api/v2.2/films/${filmId}`,
+          {
+            headers: { "X-API-KEY": API_KEY },
+          }
+        );
+        const movie = await res.json();
+        if (movie) {
+          // Используем ту же addToCollection, что объявлена ниже
+          // Но так как addToCollection зависит от user/token, а они здесь уже есть, всё сработает.
+          await addToCollection(movie);
+        }
+      } catch (err) {
+        console.error("Ошибка загрузки фильма из демо:", err);
+      }
+    });
+
+    localStorage.removeItem("demoCollection");
+  }, [user, token]); // выполнится, когда пользователь авторизуется
+
   const loadMovies = useCallback(async () => {
     setLoading(true);
     let movies = [];
