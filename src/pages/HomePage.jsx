@@ -33,7 +33,7 @@ const useCases = [
   },
 ];
 
-/* ---------- Экран 1: Герой (без кнопок) ---------- */
+/* ---------- Экран 1: Герой ---------- */
 function Hero() {
   const { user } = useAuth();
   const { scrollYProgress } = useScroll();
@@ -76,14 +76,13 @@ function Hero() {
   );
 }
 
-/* ---------- Экран 2: Демо-конструктор с анимацией, отменой и интеграцией ---------- */
+/* ---------- Экран 2: Демо-конструктор с анимацией ---------- */
 function HowItWorks() {
   const [films, setFilms] = useState([]);
-  const [selectedFilms, setSelectedFilms] = useState([]); // массив выбранных объектов
-  const [flying, setFlying] = useState(null); // { film, startX, startY }
-  const usbRef = useRef(null); // реф на контейнер флешки для получения координат
+  const [selectedFilms, setSelectedFilms] = useState([]);
+  const [flying, setFlying] = useState(null);
+  const usbRef = useRef(null);
 
-  // Загрузка реальных фильмов из API
   useEffect(() => {
     fetch(
       `https://kinopoiskapiunofficial.tech/api/v2.2/films/top?type=TOP_100_POPULAR_FILMS&page=1`,
@@ -98,20 +97,16 @@ function HowItWorks() {
       .catch(() => {});
   }, []);
 
-  // Обработчик клика по фильму
   const handleFilmClick = (film, event) => {
-    const isAlreadySelected = selectedFilms.some(
-      (f) => f.filmId === film.filmId
-    );
+    const isSelected = selectedFilms.some((f) => f.filmId === film.filmId);
 
-    if (isAlreadySelected) {
-      // Отмена выбора: удаляем из списка
+    if (isSelected) {
+      // Отмена выбора
       setSelectedFilms((prev) => prev.filter((f) => f.filmId !== film.filmId));
     } else {
-      // Добавляем фильм и запускаем анимацию полёта
       setSelectedFilms((prev) => [...prev, film]);
 
-      // Получаем координаты флешки
+      // Координаты флешки
       const usbRect = usbRef.current?.getBoundingClientRect();
       const endX = usbRect
         ? usbRect.left + usbRect.width / 2
@@ -128,7 +123,6 @@ function HowItWorks() {
         endY,
       });
 
-      // Убираем анимацию через 700 мс
       setTimeout(() => setFlying(null), 700);
     }
   };
@@ -246,43 +240,31 @@ function HowItWorks() {
           </div>
         </div>
 
-        {/* Кнопка перехода в конструктор с передачей выбранных фильмов */}
-        {selectedFilms.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-12"
-          >
-            <Link
-              to="/constructor"
-              onClick={() => {
-                // Сохраняем выбранные filmId в localStorage
-                const ids = selectedFilms.map((f) => f.filmId);
-                localStorage.setItem("demoCollection", JSON.stringify(ids));
-              }}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
-            >
-              Попробовать в конструкторе ({selectedFilms.length})
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </motion.div>
-        )}
-
-        {selectedFilms.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mt-12"
-          >
+        {/* Кнопки с фиксированной высотой, чтобы не было скачков */}
+        <div className="min-h-[80px] mt-12 flex items-center justify-center">
+          {selectedFilms.length > 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <Link
+                to="/constructor"
+                onClick={() => {
+                  const ids = selectedFilms.map((f) => f.filmId);
+                  localStorage.setItem("demoCollection", JSON.stringify(ids));
+                }}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 rounded-xl font-semibold shadow-xl shadow-red-600/20 transition-all"
+              >
+                Попробовать в конструкторе ({selectedFilms.length})
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </motion.div>
+          ) : (
             <Link
               to="/constructor"
               className="text-red-400 hover:text-red-300 font-semibold transition-colors inline-flex items-center gap-1"
             >
               Открыть конструктор <ArrowRight className="w-4 h-4" />
             </Link>
-          </motion.div>
-        )}
+          )}
+        </div>
       </div>
     </section>
   );
