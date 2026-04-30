@@ -76,7 +76,7 @@ function Hero() {
   );
 }
 
-/* ---------- Экран 2: Демо-конструктор с анимацией ---------- */
+/* ---------- Экран 2: Демо-конструктор (с работающей анимацией) ---------- */
 function HowItWorks() {
   const [films, setFilms] = useState([]);
   const [selectedFilms, setSelectedFilms] = useState([]);
@@ -106,7 +106,7 @@ function HowItWorks() {
     } else {
       setSelectedFilms((prev) => [...prev, film]);
 
-      // Координаты флешки
+      // Получаем координаты флешки
       const usbRect = usbRef.current?.getBoundingClientRect();
       const endX = usbRect
         ? usbRect.left + usbRect.width / 2
@@ -123,6 +123,7 @@ function HowItWorks() {
         endY,
       });
 
+      // Убираем анимацию через 700 мс
       setTimeout(() => setFlying(null), 700);
     }
   };
@@ -202,36 +203,6 @@ function HowItWorks() {
               />
             </div>
 
-            {/* Анимация полёта */}
-            <AnimatePresence>
-              {flying && (
-                <motion.div
-                  key={flying.film.filmId}
-                  initial={{
-                    opacity: 1,
-                    x: flying.startX - window.innerWidth / 2,
-                    y: flying.startY - window.innerHeight / 2,
-                    scale: 1,
-                  }}
-                  animate={{
-                    opacity: 0,
-                    x: flying.endX - window.innerWidth / 2,
-                    y: flying.endY - window.innerHeight / 2,
-                    scale: 0.3,
-                  }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6, ease: "easeInOut" }}
-                  className="fixed z-[200] pointer-events-none"
-                >
-                  <img
-                    src={flying.film.posterUrl}
-                    alt={flying.film.nameRu}
-                    className="w-12 h-16 object-cover rounded-lg shadow-xl"
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <p className="text-sm text-gray-400 mt-2">
               {selectedFilms.length === 0
                 ? "Кликните на фильм, чтобы добавить"
@@ -240,8 +211,8 @@ function HowItWorks() {
           </div>
         </div>
 
-        {/* Кнопки с фиксированной высотой, чтобы не было скачков */}
-        <div className="min-h-[80px] mt-12 flex items-center justify-center">
+        {/* Кнопки (без скачков) */}
+        <div className="flex justify-center mt-12 h-16">
           {selectedFilms.length > 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <Link
@@ -259,12 +230,44 @@ function HowItWorks() {
           ) : (
             <Link
               to="/constructor"
-              className="text-red-400 hover:text-red-300 font-semibold transition-colors inline-flex items-center gap-1"
+              className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold transition-colors"
             >
               Открыть конструктор <ArrowRight className="w-4 h-4" />
             </Link>
           )}
         </div>
+
+        {/* Анимация полёта (абсолютно позиционирована) */}
+        <AnimatePresence>
+          {flying && (
+            <motion.div
+              key={flying.film.filmId}
+              initial={{
+                opacity: 1,
+                x: flying.startX - window.innerWidth / 2,
+                y: flying.startY - window.innerHeight / 2,
+                scale: 1,
+                position: "fixed",
+                zIndex: 200,
+              }}
+              animate={{
+                opacity: 0,
+                x: flying.endX - window.innerWidth / 2,
+                y: flying.endY - window.innerHeight / 2,
+                scale: 0.3,
+              }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              className="fixed z-[200] pointer-events-none"
+            >
+              <img
+                src={flying.film.posterUrl}
+                alt={flying.film.nameRu}
+                className="w-12 h-16 object-cover rounded-lg shadow-xl"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
