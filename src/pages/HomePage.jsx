@@ -208,13 +208,11 @@ function HowItWorks() {
         </div>
 
  {/* Кнопки без скачков — всегда занимают одну и ту же высоту */}
-<div className="flex justify-center mt-12" style={{ minHeight: '64px' }}>
-  {selectedFilms.length > 0 ? (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+{/* Контейнер с фиксированной шириной для кнопок – без скачков */}
+<div className="flex justify-center mt-12 h-16">
+  <div className="relative inline-flex items-center justify-center" style={{ minWidth: '320px' }}>
+    {/* Активная кнопка всегда в потоке, но скрыта визуально когда не нужна */}
+    <span className={selectedFilms.length > 0 ? 'inline-flex' : 'invisible'}>
       <Link
         to="/constructor"
         onClick={() => {
@@ -226,15 +224,14 @@ function HowItWorks() {
         Попробовать в конструкторе ({selectedFilms.length})
         <ArrowRight className="w-5 h-5" />
       </Link>
-    </motion.div>
-  ) : (
-    <Link
-      to="/constructor"
-      className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold transition-colors"
-    >
-      Открыть конструктор <ArrowRight className="w-4 h-4" />
-    </Link>
-  )}
+    </span>
+    {/* Неактивная ссылка видна, когда нет выбранных */}
+    <span className={selectedFilms.length === 0 ? 'inline-flex' : 'invisible'}>
+      <Link to="/constructor" className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold transition-colors">
+        Открыть конструктор <ArrowRight className="w-4 h-4" />
+      </Link>
+    </span>
+  </div>
 </div>
 
       {/* Анимация полёта (исправлено: left/top вместо x/y) */}
